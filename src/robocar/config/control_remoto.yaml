@@ -44,7 +44,7 @@ camaras_node:
   ros__parameters:
     puerto_http: 8080
     ancho: 640
-    alto: 480
+    alto: 360                   # 640x360 (16:9) desde el 26-nov: menos peso por WiFi; antes 640x480
     fps_sensor: 30
     fps_stream: 15.0           # si la Jetson se ahoga con las dos camaras, bajar a 10.0
     calidad_jpeg: 70
