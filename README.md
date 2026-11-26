@@ -48,4 +48,4 @@ Abre `http://<ip de la Jetson>:8080` en el navegador de la laptop: se ven las do
 
 Pruebas sin hardware (un ESP32 falso y un control falso): `scripts/prueba_puente_simulado.py` y `scripts/prueba_teleop_simulado.py`.
 
-Si `colcon build` falla al generar los mensajes con un error de `empy`, compila con `PYTHONNOUSERSITE=1 colcon build --symlink-install`.
+Si `colcon build` falla al generar los mensajes con un error de `empy` (`module 'em' has no attribute 'BUFFERED_OPT'`), es que hay un `empy` 4.x instalado con pip en `~/.local` tapando al de ROS: `pip3 uninstall empy`.
