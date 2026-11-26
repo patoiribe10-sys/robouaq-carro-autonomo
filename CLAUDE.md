@@ -1,6 +1,6 @@
 # Carro autónomo RoboUAQ — contexto para Claude Code en la Jetson
 
-Última actualización: 25-nov-2026. Este archivo reemplaza al CLAUDE.md viejo (el de hace un año, de la placa de KiCad). El viejo quedó como `CLAUDE_viejo.md` por si hace falta consultarlo, pero lo que diga ahí sobre la placa ya no aplica.
+Última actualización: 26-nov-2026. Este archivo reemplaza al CLAUDE.md viejo (el de hace un año, de la placa de KiCad). El viejo quedó como `CLAUDE_viejo.md` por si hace falta consultarlo, pero lo que diga ahí sobre la placa ya no aplica.
 
 ---
 
@@ -41,7 +41,7 @@
 3. Reescribir lo necesario:
    - ESP32: C con estructuras y apuntadores (PlatformIO, Arduino-ESP32 3.x).
    - Jetson: Python con ROS 2 Humble, pyserial y el OpenCV del sistema.
-4. Flujo laptop → Jetson → ESP32 para programar y probar a la vez: editar desde la laptop (VS Code Remote-SSH), compilar y subir el firmware desde la Jetson (PlatformIO CLI por `/dev/ttyUSB0`), ver serial y logs desde la laptop.
+4. Flujo laptop → Jetson → ESP32 para programar y probar a la vez: editar desde la laptop (VS Code Remote-SSH), compilar y subir el firmware desde la Jetson (PlatformIO CLI, entorno `jetson`, por `/dev/esp32`), ver serial y logs desde la laptop.
 5. **Meta:** mover el carro con el control de Xbox conectado a la Jetson por Bluetooth y ver las dos cámaras por WiFi en el navegador de la laptop.
 
 ---
@@ -50,13 +50,23 @@
 
 - Jetson Orin Nano, nombre "Stitch", usuario `patoih`. JetPack 6.2 (L4T R36.4.7), Ubuntu 22.04, ROS 2 Humble, Python 3.10.
 - **No actualizar Ubuntu a 24.04**: JetPack 6 y ROS 2 Humble son de 22.04.
-- Antes tenía IP `172.26.169.39` en la WiFi de la escuela (puede haber cambiado).
+- La IP cambia según la red (ver "Cómo entrar a la Jetson" abajo). La que tenía en la escuela (`172.26.169.39`) ya no sirve.
 - Red por USB-C: debería aparecer en la laptop como `192.168.55.1` (servicio `nv-l4t-usb-device-mode`). El 25-nov no apareció; está pendiente averiguar por qué.
 - Alimentación: desde J5 de la PCB v2 (+10 V, medido 9.8 V, no baja con carga). Plug de barril centro positivo. Con la batería abajo de ~11 V se pierde margen. En el banco también puede ir a su eliminador.
 - Modo de competencia: `sudo nvpmodel -m 2` y `sudo jetson_clocks` (25 W).
-- Control Xbox One: ya estuvo emparejado por Bluetooth (revisar con `bluetoothctl`).
+- Control Xbox One: emparejado por Bluetooth y aparece como `/dev/input/js0` (verificado el 26-nov). No hace falta xpadneo: se va a leer con `game_controller_node` del paquete `joy` (ros-humble-joy 3.3.0).
+
+### Cómo entrar a la Jetson (la IP fija ya no es la única forma)
+1. **Tailscale: funciona desde cualquier red con internet** (casa, escuela, hotspot). La Jetson se llama `stitch` en la tailnet y su IP es `100.97.122.71`. La laptop también tiene que tener Tailscale con la misma cuenta. Entrar con `ssh patoih@stitch` o `ssh patoih@100.97.122.71`; en VS Code Remote-SSH, el mismo host.
+2. **Red local: IP o `stitch.local`**, con la laptop en la misma red. La IP actual en la red de la casa es `192.168.1.3`, pero cambia de una red a otra, así que es mejor `stitch.local` (mDNS con `avahi-daemon`, resuelve a `192.168.1.3`). Avahi lleva `deny-interfaces=docker0` en `/etc/avahi/avahi-daemon.conf` (respaldo `.bak`) porque si no anunciaba la IP de Docker (`172.17.0.1`) en lugar de la de la WiFi.
+3. **Hotspot del celular de Pato.** La Jetson lo tiene guardado y se conecta sola cuando no hay una red mejor. La laptop también debe conectarse a ese hotspot; luego se entra por `stitch.local`, por la IP que le dé el celular o por Tailscale.
+
+La Jetson elige sola la mejor red conocida que encuentre: primero la de la casa (prioridad 30), luego la de la escuela (20) y al final el hotspot del celular de Pato (10). La red de invitados de la escuela está guardada pero sin autoconexión. Los perfiles de la escuela y del hotspot usan la MAC real de la tarjeta (`cloned-mac-address permanent`) para que la escuela siga reconociendo a la Jetson: **MAC de `wlP1p1s0` = `9c:c7:d3:89:ba:09`**. Las contraseñas de WiFi las guarda NetworkManager en archivos que solo lee root; nunca van en el repo ni en este archivo.
+
+Detalles de Tailscale: instalado con el script oficial (agrega el repositorio apt de `pkgs.tailscale.com`). `tailscale status` avisa que faltan las reglas `connmark` de iptables (el kernel de Tegra no trae ese módulo); no afecta entrar por SSH, solo funciones como subnet router o exit node, que no se usan. **Pendiente de Pato:** en la consola de administración de Tailscale, desactivar la caducidad de la llave de `stitch`; por defecto caduca a los 180 días (hacia fines de mayo de 2027, justo en la competencia) y la Jetson saldría de la tailnet.
 
 ### Software viejo en `~/robocar_ws` (revisar, no confiar)
+- Actualización del 26-nov: `serial_bridge_node`, `teleop_xbox_node`, `launch/teleop_launch.py`, `esp32_firmware/`, `test_uart.py` y los prompts y planes de abril se archivaron en `archivo_viejo/` (siguen en el historial de git). El puente y el teleop se reescriben con el protocolo de `carro-v2`.
 - Paquete `robocar` con los nodos `teleop_xbox_node`, `serial_bridge_node`, `lane_node`, `detect_node` y `nav_node`; dashboard Flask + SocketIO en el puerto 8080; scripts `calibrate_fisheye.py` y `view_camera.py`; launch files; `PROMPT_CLAUDE_CODE.md`.
 - `colcon build` compilaba sin errores y el teleop del Xbox publicaba `/cmd_vel`.
 - Calibración de cam0 (ojo de pez) hecha: tablero de 5×7 esquinas interiores, RMS 0.6417 px, en `config/camera_fisheye.yaml`.
@@ -70,7 +80,8 @@
   `nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM),width=640,height=480,format=NV12,framerate=30/1 ! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink sync=false drop=true max-buffers=1`
 - Arreglo de ldconfig para GStreamer: `/etc/ld.so.conf.d/000_a_nvidia-tegra.conf` se llama así para ordenarse antes de `000_cuda.conf` (si no, la libnvjpeg de CUDA tapa la de Jetson). No tocarlo.
 - El usuario debe estar en el grupo `video` (si no, error de NvBufSurface con las cámaras).
-- Driver CH340 (el USB-serial del ESP32) no viene en el kernel: está compilado en `~/CH341SER` y se carga con `cd ~/CH341SER && sudo insmod ch34x.ko` **después de cada reinicio**. Pendiente dejarlo como servicio de systemd.
+- Driver CH340 (el USB-serial del ESP32): no viene en el kernel, pero `ch34x.ko` (compilado en `~/CH341SER`) ya está instalado en `/lib/modules/5.15.148-tegra/kernel/drivers/usb/serial/` y listado en `/etc/modules`, así que se carga solo en cada arranque. Ya no hace falta `insmod` ni un servicio. **Si algún día se actualiza el kernel, hay que recompilarlo** en `~/CH341SER` (el `vermagic` debe coincidir con `uname -r`). Al conectar el ESP32 el kernel imprime un `WARNING: transfer buffer is on stack` de este driver; es conocido y no impide que funcione.
+- El ESP32 aparece siempre como `/dev/esp32` (regla `/etc/udev/rules.d/99-esp32.rules`, que además le dice a ModemManager que lo ignore). El CH340 de la placa no trae número de serie: si se conecta otro CH340 al mismo tiempo, también coincide con la regla.
 - `brltty` roba `/dev/ttyUSB0`; ya está desactivado.
 - **Abrir el serial siempre con `dsrdtr=False, rtscts=False`** en pyserial. Si no, la línea DTR reinicia al ESP32.
 - Librerías instaladas: ultralytics, dt-apriltags, pyserial, smbus2, Flask, Flask-SocketIO.
@@ -137,7 +148,7 @@ ESP32Servo: llamar `ESP32PWM::allocateTimer(0)` antes de `ledcAttach` del motor 
 ### Protocolo Jetson ↔ ESP32 (firmware nuevo `firmware/carro-v2`, compila; falta subirlo y probarlo)
 - Jetson → ESP32: `V<vel>,S<dir>\n` con vel y dir de -100 a 100 (vel negativa = reversa; dir -100 = izquierda total, 0 = centro, 100 = derecha total).
 - ESP32 → Jetson (~20 Hz): `v<pulsos/s>,s<dir>,b<mV batería>,e<estado>\n` con e = 0 ok, 1 paro de emergencia, 2 timeout, 3 batería baja.
-- `P\n` → responde `pong`.
+- `P\n` → responde `pong`. `?\n` → responde una línea de estado legible (estado, paro, batería, comando, PWM, encoder). Ni `P` ni `?` reinician el timeout.
 - Si no llega un comando válido en 300 ms, frena y centra (estado 2). Por eso el nodo de la Jetson tiene que mandar comandos seguido (cada ~50–100 ms).
 - Batería baja: < 10.5 V pita y limita la velocidad al 50 %; < 9.9 V apaga el motor.
 - El firmware viejo usaba solo `V<vel>,S<dir>` y contestaba `v...,s...`; los nodos viejos hay que adaptarlos.
@@ -146,7 +157,7 @@ ESP32Servo: llamar `ESP32PWM::allocateTimer(0)` antes de `ledcAttach` del motor 
 
 ## Repositorio
 
-- GitHub: `patoiribe10-sys/autonomo-v2-pcb` (público). En la laptop: `C:\Users\symka\autonomo-v2-pcb`.
+- Hay **dos repos**, separados. `patoiribe10-sys/autonomo-v2-pcb` (público) es el de la placa y el curso: firmware, docs y hardware. En la laptop: `C:\Users\symka\autonomo-v2-pcb`; en la Jetson: `~/autonomo-v2-pcb`. `patoiribe10-sys/robouaq-carro-autonomo` es el carro completo y es `~/robocar_ws` entero (paquete ROS, config, `archivo_viejo/` y este CLAUDE.md). En la Jetson los dos remotos van por SSH (`git@github.com:...`). Este archivo vive en ambos: en `autonomo-v2-pcb` está como `jetson/CLAUDE.md`; si se cambia uno, copiarlo al otro.
 - `firmware/`: proyectos de PlatformIO (`platform = espressif32@^8.0.0`, board `esp32doit-devkit-v1`, `upload_speed = 460800`):
   - `plantilla/` con `include/pines_v2.h`
   - `prueba-usb/`, `prueba-pcb/` (menú de pruebas) y `demo-recorrido/` (ya probados en la placa)
@@ -154,7 +165,7 @@ ESP32Servo: llamar `ESP32PWM::allocateTimer(0)` antes de `ledcAttach` del motor 
 - `docs/` (sitio en GitHub Pages: https://patoiribe10-sys.github.io/autonomo-v2-pcb/), `manual/` (manual interactivo de la placa), `hardware/`, `reporte/`.
 - Resultados de pruebas para el artículo: `docs/resultado.md`.
 - Config del repo: `Alain Iribe Haddad <patoiribe10-sys@users.noreply.github.com>`, `pull.rebase=false`.
-- Plan: clonar el repo en la Jetson para que el firmware viva en un solo lugar y compilarlo ahí con `pip install platformio` (funciona en ARM64).
+- El firmware se compila en la Jetson con PlatformIO 6.1.19 (`pip`, ARM64): `carro-v2` compila con RAM 7.1 % y flash 22.6 % (26-nov). Subir y ver el serial: `pio run -e jetson -t upload` y `pio device monitor -e jetson`, solo cuando Pato diga "súbelo".
 
 ---
 
@@ -189,3 +200,14 @@ Pendientes de antes que siguen vigentes: control PID de velocidad en el ESP32, c
 - Red: la Jetson está en la WiFi local con IP `192.168.1.3`. SSH listo: desde la laptop `ssh stitch` (alias a `patoih@192.168.1.3`) entra sin contraseña con llave ed25519, y VS Code ya está conectado por Remote-SSH.
 - USB-C: el servicio `nv-l4t-usb-device-mode` está activo, pero `usb0`, `usb1` y `l4tbr0` están en DOWN (la laptop no ve `192.168.55.1`). Pendiente probar otro cable (puede ser uno que solo carga).
 - Siguiente: revisión de `~/robocar_ws` (solo lectura, sin cambiar nada) y tabla de reaprovechar/corregir/reescribir/borrar.
+
+### 26-nov-2026
+- Kernel y driver: no hay kernel nuevo pendiente (el kernel en uso y el `vermagic` de `ch34x.ko` son `5.15.148-tegra`; la tanda de 503 paquetes del 25-nov no tocó `nvidia-l4t-*`). El driver CH340 ya se autocarga, así que no se hizo servicio.
+- Regla udev: `/dev/esp32` apunta al ESP32 (CH340 `1a86:7523`). El control Xbox ya aparece como `/dev/input/js0`.
+- Revisión de `~/robocar_ws` con dos subagentes Sonnet (solo lectura) y tabla de reaprovechar, corregir, reescribir y borrar. Lo viejo se archivó en `archivo_viejo/` (no se borró nada).
+- Dos repos en GitHub, por SSH desde la Jetson: `autonomo-v2-pcb` (movido a `~/autonomo-v2-pcb`) y `robouaq-carro-autonomo` (nuevo, es `~/robocar_ws`; dos commits: "v1" tal cual y el archivado). Antes de subir el segundo se cambió el correo del maintainer por el noreply de GitHub.
+- Firmware: `carro-v2` compila en la Jetson (RAM 7.1 %, flash 22.6 %). Se corrigió el comentario del encoder (`ENC_SIGNO = -1` es correcto: en la placa real adelante contaba negativo) y el límite del `snprintf` de la telemetría. `platformio.ini` de `carro-v2` ahora tiene el entorno `esp32doit-devkit-v1` (por defecto, sin puerto) y `jetson` (con `/dev/esp32`). `firmware/README.md` lista los cinco proyectos. **No se subió nada al ESP32.**
+- Red fuera de casa: Tailscale instalado (`stitch`, `100.97.122.71`), avahi arreglado (`stitch.local` resuelve a la IP de la WiFi y no a la de Docker), perfiles de WiFi con prioridades 30, 20 y 10 (casa, escuela y hotspot del celular de Pato), MAC real fija. Ver "Cómo entrar a la Jetson".
+- Decisiones para los nodos nuevos (aún sin escribir): mensajes propios en un paquete `robocar_interfaces` (`ComandoCarro`, `EstadoCarro`); topics `/carro/cmd` y `/carro/estado`; puente con un solo hilo dueño del puerto, timeout propio de 300 ms que manda `V0,S0`, sin `ttyTHS1` por defecto; teleop con `/joy` de `game_controller_node`, **LB mantenido = hombre muerto**, stick izquierdo ↑↓ = velocidad, stick derecho ←→ = dirección, RB = turbo, `vel_max` 30 % (turbo 60 %) y rampa de velocidad de máximo 10 % por ciclo; nodo de cámaras que no abre ni codifica si nadie está viendo (si se ahoga con las dos, bajar a 10 fps antes que la resolución), con una página que muestra en grande el estado del carro y el voltaje de la batería. El paro por BOOT solo se libera con START físico.
+- Pendiente de Pato: desactivar la caducidad de la llave de Tailscale para `stitch`; probar otro cable USB-C para la red por `192.168.55.1`.
+- Siguiente: escribir `robocar_interfaces`, puente, teleop, cámaras y el launch; pruebas por partes (cuando Pato diga "súbelo": subir `carro-v2` y correr `prueba_serial.py --solo-direccion` con las ruedas al aire); después documentar en `docs/resultado.md` y copiar los nodos a `jetson/demo-control-remoto/`.
