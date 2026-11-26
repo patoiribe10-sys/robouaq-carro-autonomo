@@ -53,7 +53,7 @@
 - La IP cambia según la red (ver "Cómo entrar a la Jetson" abajo). La que tenía en la escuela (`172.26.169.39`) ya no sirve.
 - Red por USB-C: debería aparecer en la laptop como `192.168.55.1` (servicio `nv-l4t-usb-device-mode`). El 25-nov no apareció; está pendiente averiguar por qué.
 - Alimentación: desde J5 de la PCB v2 (+10 V, medido 9.8 V, no baja con carga). Plug de barril centro positivo. Con la batería abajo de ~11 V se pierde margen. En el banco también puede ir a su eliminador.
-- Modo de competencia: `sudo nvpmodel -m 2` y `sudo jetson_clocks` (25 W).
+- Modos de energía (`/etc/nvpmodel.conf`): **`-m 0` = 15W, `-m 1` = 25W, `-m 2` = MAXN_SUPER (sin tope de CPU/GPU; es el modo actual), `-m 3` = 7W.** Ojo: antes este archivo decía que `-m 2` era 25 W; es MAXN_SUPER, **25 W es `-m 1`**. Para la competencia se decide en la fase F4 (ver "Optimización de la Jetson"): MAXN_SUPER con `sudo jetson_clocks` para latencia fija, o `-m 1` si la batería lo pide. Hoy no se ha cambiado el modo.
 - Control Xbox One: emparejado por Bluetooth y aparece como `/dev/input/js0` (verificado el 26-nov). No hace falta xpadneo: se va a leer con `game_controller_node` del paquete `joy` (ros-humble-joy 3.3.0).
 
 ### Cómo entrar a la Jetson (la IP fija ya no es la única forma)
@@ -85,6 +85,24 @@ Detalles de Tailscale: instalado con el script oficial (agrega el repositorio ap
 - `brltty` roba `/dev/ttyUSB0`; ya está desactivado.
 - **Abrir el serial siempre con `dsrdtr=False, rtscts=False`** en pyserial. Si no, la línea DTR reinicia al ESP32.
 - Librerías instaladas: ultralytics, dt-apriltags, pyserial, smbus2, Flask, Flask-SocketIO.
+
+### Optimización de la Jetson (plan del 26-nov, una fase a la vez)
+Objetivo: que `nvargus-daemon` no se quede sin memoria al manejar con las dos cámaras. **Nunca se tocan:** ssh, tailscaled, NetworkManager, bluetooth, avahi, nvargus-daemon, udev y la regla `/dev/esp32`, el hold del kernel, nada de NVIDIA/CUDA ni `systemd-timesyncd`. Herramientas (en `scripts/`): `medir_jetson.sh "<etiqueta>" [seg]` (solo lectura; agrega una línea a `mediciones_jetson.tsv`), `optimizar_jetson.sh <fase> [--aplicar]` (sin `--aplicar` solo muestra los comandos) y `revertir_optimizacion.sh <fase> [--aplicar]`. No hay swap file a propósito: la raíz es una microSD y el fallo de `nvargus` es memoria del kernel que no se manda a swap; el zram de 3.8 GB (de NVIDIA) se queda.
+
+| Fase | Qué | RAM usada antes → después | Estado |
+|---|---|---|---|
+| F0 | Cerrar Epiphany/WebKit y Chromium | 3 503 → **1 973 MB** (disponible 3 835 → 5 367; **CmaFree 14–21 → 190 MB**, GPU 0–36 % → 8 %) | hecha |
+| F1 | Overrides de autostart del usuario (gnome-software, Evolution, update-notifier, DejaDup, print-applet, onboard, orca, spice, ubuntu-advantage/report, tracker) y `systemctl --user mask` de tracker, gnome-remote-desktop y los 3 servicios de Evolution | 1 973 → **1 739 MB** (−234), servicios de usuario 43 → 38 | hecha |
+| F2a | Docker y containerd (`disable --now`, sin desinstalar) | pendiente (se espera −143 MB y ~4.6 s de arranque) | pendiente (sudo de Pato) |
+| F2b | `packagekit` y `fwupd` (mask/disable) | pendiente (~−180 MB) | pendiente |
+| F2c | ModemManager, rpcbind, kerneloops, lpd y snap `cups` | pendiente (~−30 MB, ~2.7 s de arranque) | pendiente |
+| F2d | geoclue, colord, switcheroo-control, power-profiles-daemon | pendiente (~−45 MB) | pendiente |
+| F2e | timers de apt, motd-news y update-notifier | pendiente | pendiente |
+| F3 | `vm.min_free_kbytes` 45 056 → 262 144 + prueba de estrés de cámara midiendo también `CmaFree` | pendiente | pendiente |
+| F4 | Modo de energía (medir 0/1/2 con y sin `jetson_clocks`) | — | pendiente; no se cambia sin OK |
+| F5 | Modo texto en los días de manejo | — | **no por ahora** |
+
+Hallazgo de F0: con el navegador cerrado la memoria contigua (CMA) pasó de 14–21 MB libres a 190 MB. Con Chromium abierto el 26-nov solo había 4 MB cuando falló la cámara, así que **el navegador es el sospechoso principal** de que `nvargus` se quedara sin memoria. Cada fase se revierte con `scripts/revertir_optimizacion.sh <fase> --aplicar`. Reposo de referencia (F1): 5 601 MB disponibles, CPU 5 %, 4.1 W, 47 °C.
 
 ---
 

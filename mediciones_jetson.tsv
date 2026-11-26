@@ -1,0 +1,4 @@
+etiqueta	fecha	MemAvailable_MB	usada_MB	cache_MB	libre_MB	CmaFree_MB	zram_usado_MB	svc_sistema	svc_usuario	CPU_pct	VDD_IN_mW	tj_C_prom	tj_C_max	GR3D_pct
+F0 despues (sin Epiphany/Chromium) = LINEA BASE	2026-11-26 13:52:09	5367	1973	3042	2289	190	0	50	43	6	4126	47.3	47.6	8
+F1 despues (autostart de usuario apagado)	2026-11-26 13:53:52	5546	1794	3041	2468	190	0	50	38	6	4089	47.0	47.2	24
+F1 despues (con evolution-alarm cerrado)	2026-11-26 13:54:37	5601	1739	3047	2517	190	0	50	38	5	4094	46.9	47.1	27
