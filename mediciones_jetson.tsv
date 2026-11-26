@@ -6,3 +6,4 @@ F2a despues (Docker y containerd apagados)	2026-11-26 13:57:57	5625	1713	3079	25
 F2b despues (packagekit y fwupd apagados)	2026-11-26 13:59:33	5674	1665	3081	2553	190	0	46	38	7	4123	46.9	47.1	8
 F2c despues (ModemManager, rpcbind, kerneloops, lpd, cups)	2026-11-26 14:00:47	5691	1641	3095	2564	190	0	41	38	7	4122	46.9	47.2	32
 F2d despues (geoclue, colord, switcheroo, power-profiles)	2026-11-26 14:02:11	5670	1662	3095	2542	190	0	38	38	7	4123	46.8	47.0	21
+F2e despues (timers de apt/motd/update-notifier apagados)	2026-11-26 14:03:39	5685	1646	3095	2557	190	0	37	38	8	4249	46.9	47.1	18

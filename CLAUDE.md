@@ -97,7 +97,7 @@ Objetivo: que `nvargus-daemon` no se quede sin memoria al manejar con las dos c�
 | F2b | `packagekit` y `fwupd` (mask/disable) | 1 713 → **1 665 MB** (−48), servicios 48 → 46. `apt` sigue funcionando | hecha (Pato, con sudo) |
 | F2c | ModemManager, rpcbind, kerneloops, lpd y snap `cups` | 1 665 → **1 641 MB** (−24), servicios del sistema 46 → **41**, **el puerto 111 ya no escucha**. La regla `ID_MM_DEVICE_IGNORE` del ESP32 se conservó. `lpd` quedó deshabilitado pero su proceso (0.5 MB) sigue hasta reiniciar | hecha (Pato, con sudo) |
 | F2d | geoclue, colord, switcheroo-control, power-profiles-daemon | 1 641 → 1 662 MB bruto, pero Claude Code creció 487 → 508 MB; sin contar Claude queda igual (1 154 MB). **No libera memoria medible**; servicios del sistema 41 → **38**. Hora sincronizada, GNOME sano | hecha (Pato, con sudo) |
-| F2e | timers de apt, motd-news y update-notifier | pendiente | pendiente |
+| F2e | timers de apt, motd-news, update-notifier y man-db | sin efecto de memoria (1 646 MB); servicios del sistema 38 → 37. Evita que apt corra solo a mitad de una prueba; las listas hay que refrescarlas a mano con `sudo apt update` | hecha (Pato, con sudo) |
 | F3 | `vm.min_free_kbytes` 45 056 → 262 144 + prueba de estrés de cámara midiendo también `CmaFree` | pendiente | pendiente |
 | F4 | Modo de energía (medir 0/1/2 con y sin `jetson_clocks`) | — | pendiente; no se cambia sin OK |
 | F5 | Modo texto en los días de manejo | — | **no por ahora** |
