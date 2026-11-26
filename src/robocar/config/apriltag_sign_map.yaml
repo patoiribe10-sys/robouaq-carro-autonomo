@@ -1,0 +1,9 @@
+# Mapeo AprilTag 36h11 ID → nombre de señal RoboUAQ 2026
+# Asignado según reglamento oficial
+tags:
+  0: no_pasar
+  1: sin_salida
+  2: vuelta_derecha
+  3: vuelta_izquierda
+  4: siga_de_frente
+  5: alto

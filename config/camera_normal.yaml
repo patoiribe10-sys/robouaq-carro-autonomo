@@ -1,0 +1,16 @@
+# camera_normal.yaml — Calibración cam1 (IMX219 frontal, lente normal)
+# PLACEHOLDER — calibrar con: python3 scripts/calibrate_fisheye.py --sensor-id 1 --no-fisheye
+# Valores estimados para IMX219 @ 640x480; error esperado sin calibrar: ±15%
+model: standard
+image_width: 640
+image_height: 480
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [600.0, 0.0, 320.0,
+         0.0, 600.0, 240.0,
+         0.0, 0.0, 1.0]
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.0, 0.0, 0.0, 0.0, 0.0]

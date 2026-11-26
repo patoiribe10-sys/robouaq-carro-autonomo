@@ -1,0 +1,9 @@
+# apriltag_sign_map.yaml — Mapeo AprilTag 36h11 → señal RoboUAQ 2026
+# Ajustar IDs reales en pista de competencia (3 min calibración)
+tags:
+  0: no_pasar
+  1: sin_salida
+  2: vuelta_derecha
+  3: vuelta_izquierda
+  4: siga_de_frente
+  5: alto

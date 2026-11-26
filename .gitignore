@@ -1,0 +1,30 @@
+# ROS 2 / colcon
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+
+# PlatformIO
+.pio/
+.vscode/
+
+# Local de Claude Code
+.claude/settings.local.json
+
+# Cosas pesadas o privadas: videos, rosbags, modelos grandes, llaves
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.db3
+*.mcap
+rosbag*/
+*.pt
+*.onnx
+*.engine
+*.pem
+*.key
+.env
