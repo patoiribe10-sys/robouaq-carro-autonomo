@@ -46,6 +46,14 @@ Abre `http://<ip de la Jetson>:8080` en el navegador de la laptop: se ven las do
 - Los índices de los ejes y botones, y los límites de velocidad, están en `src/robocar/config/control_remoto.yaml`. Para confirmar los índices: `python3 scripts/ver_joy.py`.
 - Si el carro no se mueve en la dirección esperada, cambia `signo_vel` o `signo_dir` en ese archivo.
 
-Pruebas sin hardware (un ESP32 falso y un control falso): `scripts/prueba_puente_simulado.py` y `scripts/prueba_teleop_simulado.py`.
+Pruebas sin hardware (un ESP32 falso y un control falso):
+- `scripts/prueba_sistema_simulado.py`: **todo el sistema** (launch real, ESP32 falso, `/joy` falso, web y cámaras), 27 comprobaciones.
+- `scripts/prueba_puente_simulado.py`, `scripts/prueba_teleop_simulado.py` y `scripts/prueba_camaras_tolerancia.py`: cada pieza por separado.
+- `scripts/prevuelo.sh`: lista de comprobación (solo lectura) antes de probar el carro.
+
+Con el control real: `scripts/calibrar_control.py` (mide el mapeo), `scripts/ver_joy.py --lanzar` (ver `/joy` en vivo con nombres),
+`scripts/diagnostico_direccion.py` (mide qué eje del stick derecho usar) y `scripts/verificar_teleop.py` (verificación guiada del teleop).
+
+El `launch` acepta `puerto:=<ruta>`, `joy:=false` y `camaras:=false` para simular o probar por partes.
 
 Si `colcon build` falla al generar los mensajes con un error de `empy` (`module 'em' has no attribute 'BUFFERED_OPT'`), es que hay un `empy` 4.x instalado con pip en `~/.local` tapando al de ROS: `pip3 uninstall empy`.

@@ -23,6 +23,7 @@ import rclpy
 from rclpy.node import Node
 import serial
 
+from robocar.cierre import ignorar_senales_de_cierre
 from robocar_interfaces.msg import ComandoCarro, EstadoCarro
 
 try:  # existe en rclpy de Humble en adelante
@@ -305,6 +306,7 @@ def main(args=None):
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
+        ignorar_senales_de_cierre()      # ros2 launch manda SIGINT dos veces: la 2a no debe cortar el cierre
         nodo.cerrar()
         nodo.destroy_node()
         if rclpy.ok():

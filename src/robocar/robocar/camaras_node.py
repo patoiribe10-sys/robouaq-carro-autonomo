@@ -40,6 +40,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
+from robocar.cierre import ignorar_senales_de_cierre
 from robocar_interfaces.msg import EstadoCarro
 
 try:
@@ -305,6 +306,11 @@ class Camara:
 
             # 2) dormida: nadie la ve y no hay proceso -> no se abre ni se codifica nada
             if proc is None and not ver:
+                if self.existe is False:
+                    if self.estado != 'no_detectada':
+                        self._set_estado('no_detectada', f'no detectada ({self.dispositivo})')
+                elif self.estado != 'dormida':
+                    self._set_estado('dormida', limpiar_cuadro=True)
                 with self.cond:
                     self.cond.wait(0.5)
                 continue
@@ -661,10 +667,16 @@ def main(args=None):
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
-        nodo.cerrar()
+        ignorar_senales_de_cierre()      # ros2 launch manda SIGINT dos veces: la 2a no debe cortar el cierre
+        nodo.cerrar()                    # servidor web, hilos de camara y procesos hijos, en orden
         nodo.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
+        # Ya se cerro todo. Se sale sin correr los destructores estaticos de C++ (OpenCV, rclpy, DDS):
+        # a veces abortaban con "terminate called without an active exception" (codigo -6) al cerrar.
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(0)
 
 
 if __name__ == '__main__':
