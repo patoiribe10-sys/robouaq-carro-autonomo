@@ -31,7 +31,7 @@ from rclpy.node import Node
 from rclpy.signals import SignalHandlerOptions
 from sensor_msgs.msg import Joy
 
-from robocar.cierre import ignorar_senales_de_cierre
+from robocar.cierre import ignorar_senales_de_cierre, perro_guardian
 from robocar_interfaces.msg import ComandoCarro
 
 try:
@@ -202,6 +202,7 @@ def main(args=None):
         pass
     finally:
         ignorar_senales_de_cierre()      # ros2 launch manda SIGINT dos veces: la 2a no debe cortar el cierre
+        perro_guardian(8.0)              # si el cierre se atorara, salir a la fuerza a los 8 s
         nodo.parar()
         nodo.destroy_node()
         if rclpy.ok():

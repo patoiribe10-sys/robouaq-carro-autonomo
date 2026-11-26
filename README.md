@@ -49,6 +49,8 @@ Abre `http://<ip de la Jetson>:8080` en el navegador de la laptop: se ven las do
 Pruebas sin hardware (un ESP32 falso y un control falso):
 - `scripts/prueba_sistema_simulado.py`: **todo el sistema** (launch real, ESP32 falso, `/joy` falso, web y cámaras), 27 comprobaciones.
 - `scripts/prueba_puente_simulado.py`, `scripts/prueba_teleop_simulado.py` y `scripts/prueba_camaras_tolerancia.py`: cada pieza por separado.
+- `scripts/prueba_cierre_puente.py`: estresa el cierre del puente (despedida `V0,S0` siempre).
+Las pruebas simuladas corren en `ROS_DOMAIN_ID=77`, aisladas del control real.
 - `scripts/prevuelo.sh`: lista de comprobación (solo lectura) antes de probar el carro.
 
 Con el control real: `scripts/calibrar_control.py` (mide el mapeo), `scripts/ver_joy.py --lanzar` (ver `/joy` en vivo con nombres),

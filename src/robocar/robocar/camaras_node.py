@@ -40,7 +40,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from robocar.cierre import ignorar_senales_de_cierre
+from robocar.cierre import ignorar_senales_de_cierre, perro_guardian
 from robocar_interfaces.msg import EstadoCarro
 
 try:
@@ -149,6 +149,15 @@ class Camara:
             try:
                 p.kill()
                 p.wait(timeout=3.0)
+            except Exception:
+                pass
+
+    def matar_hijo(self):
+        """Mata el proceso de captura si sigue vivo (lo usa el perro guardian del cierre)."""
+        p = self._proc_vivo
+        if p is not None and p.poll() is None:
+            try:
+                p.kill()
             except Exception:
                 pass
 
@@ -679,6 +688,8 @@ def main(args=None):
         pass
     finally:
         ignorar_senales_de_cierre()      # ros2 launch manda SIGINT dos veces: la 2a no debe cortar el cierre
+        # si el cierre se atorara mas de 10 s: matar los procesos de captura y salir a la fuerza
+        perro_guardian(10.0, limpiar=lambda: [c.matar_hijo() for c in nodo.camaras.values()])
         nodo.cerrar()                    # servidor web, hilos de camara y procesos hijos, en orden
         nodo.destroy_node()
         if rclpy.ok():

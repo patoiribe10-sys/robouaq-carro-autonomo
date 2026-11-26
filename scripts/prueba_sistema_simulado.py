@@ -275,11 +275,27 @@ def main():
         joy.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
-        time.sleep(0.5)
-        vivos = subprocess.run('ps -eo args | grep -E "[s]erial_bridge_node|[t]eleop_xbox_node|[c]amaras_node|[c]amara_worker" | wc -l',
-                               shell=True, capture_output=True, text=True).stdout.strip()
+        # Tras el Ctrl+C los nodos terminan su cierre ordenado (camaras_node mata el proceso de captura, que puede
+        # estar en su pausa de 3 s): se espera hasta 10 s a que desaparezcan y se reporta cuanto tardaron.
+        def contar_vivos():
+            # pgrep ANCLADO al inicio del proceso: solo cuenta 'python3 .../<nodo>', no el shell que lanzo esta prueba
+            # (un 'ps | grep' por nombre se contaba a si mismo cuando el comando contenia esos nombres).
+            r = subprocess.run(['pgrep', '-fc', r'^/usr/bin/python3 [^ ]*/(serial_bridge_node|teleop_xbox_node|camaras_node|camara_worker)(\.py)?( |$)'],
+                               capture_output=True, text=True)
+            return int((r.stdout.strip() or '0').split()[0])
+        t_vivos = time.monotonic()
+        while contar_vivos() > 0 and time.monotonic() - t_vivos < 10.0:
+            time.sleep(0.1)
+        vivos = str(contar_vivos())
+        tardaron = time.monotonic() - t_vivos
+        if vivos != '0':
+            quienes = subprocess.run(['pgrep', '-fa', r'^/usr/bin/python3 [^ ]*/(serial_bridge_node|teleop_xbox_node|camaras_node|camara_worker)(\.py)?( |$)'],
+                                     capture_output=True, text=True).stdout
+            print('   procesos que siguen vivos:')
+            for l in quienes.splitlines():
+                print('     ', l[:170])
         check('el launch cierra limpio con Ctrl+C', cerro, f'({dt:.1f} s)')
-        check('no queda ningun nodo ni proceso de camara vivo', vivos == '0', f'({vivos} vivos)')
+        check('no queda ningun nodo ni proceso de camara vivo (se espera hasta 10 s)', vivos == '0', f'({vivos} vivos; tardaron {tardaron:.1f} s tras salir el launch)')
         finales = [l for _, l in esp.recibido[n_antes:] if l.startswith('V')]
         check('el puente se despide con V0,S0', finales.count('V0,S0') >= 3, f'(ultimas {finales[-3:]})')
         logf.close()

@@ -23,7 +23,7 @@ import rclpy
 from rclpy.node import Node
 import serial
 
-from robocar.cierre import ignorar_senales_de_cierre
+from robocar.cierre import ignorar_senales_de_cierre, perro_guardian
 from robocar_interfaces.msg import ComandoCarro, EstadoCarro
 
 try:  # existe en rclpy de Humble en adelante
@@ -106,7 +106,14 @@ class SerialBridgeNode(Node):
         m.estado = recortar(int(estado), 0, 255)
         m.estado_texto = TEXTO_ESTADO.get(m.estado, 'desconocido')
         m.ultima_telemetria = self.get_clock().now().to_msg()
-        self.pub_estado.publish(m)
+        try:
+            self.pub_estado.publish(m)
+        except Exception:
+            # Al cerrar, rclpy invalida el contexto ANTES de que termine este hilo: publicar falla con
+            # "publisher's context is invalid". Durante el cierre eso es normal y no debe matar el hilo
+            # (si muriera aqui no llegaria a su despedida V0,S0). Fuera del cierre si se avisa.
+            if not self._parar.is_set() and rclpy.ok():
+                self.get_logger().error('No pude publicar /carro/estado', throttle_duration_sec=10.0)
 
     # --------------------------------------------------------------- Serial
     def _abrir(self):
@@ -202,75 +209,81 @@ class SerialBridgeNode(Node):
         cmd_viejo = True
         solo_usb_avisado = False
 
-        while not self._parar.is_set():
-            ahora = time.monotonic()
+        try:
+            while not self._parar.is_set():
+                ahora = time.monotonic()
 
-            # ---- sin puerto: avisar y reintentar
-            if ser is None:
-                if ahora - ultimo_aviso_desc >= 1.0:
+                # ---- sin puerto: avisar y reintentar
+                if ser is None:
+                    if ahora - ultimo_aviso_desc >= 1.0:
+                        ultimo_aviso_desc = ahora
+                        self._publicar(False)
+                    if ahora < proximo_intento:
+                        self._parar.wait(0.1)
+                        continue
+                    ser = self._abrir()
+                    if ser is None:
+                        proximo_intento = time.monotonic() + self.reintento
+                        continue
+                    buf.clear()
+                    t_tel = 0.0
+                    estado_prev = None
+                    solo_usb_avisado = False
+                    self._saludar(ser)
+                    t_abierto = time.monotonic()
+                    siguiente_envio = t_abierto
+                    continue
+
+                try:
+                    # ---- escribir el comando (cada periodo_envio)
+                    ahora = time.monotonic()
+                    if ahora >= siguiente_envio:
+                        siguiente_envio += self.periodo_envio
+                        if siguiente_envio < ahora:
+                            siguiente_envio = ahora + self.periodo_envio
+                        vel, dir_, cmd_viejo = self._comando_vigente(ahora, cmd_viejo)
+                        ser.write(f'V{vel},S{dir_}\n'.encode('ascii'))
+
+                    # ---- leer telemetria
+                    n = ser.in_waiting
+                    if n:
+                        buf += ser.read(n)
+                        tel = self._procesar_lineas(buf, estado_prev)
+                        if tel is not None:
+                            pulsos, d, mv, estado = tel
+                            t_tel = time.monotonic()
+                            self._publicar(True, pulsos, d, mv, estado)
+                            estado_prev = self._avisos(estado, mv, estado_prev)
+                            if mv == 0 and not solo_usb_avisado:
+                                solo_usb_avisado = True
+                                self.get_logger().info(
+                                    'El ESP32 reporta b0: solo USB, sin bateria (no es bateria critica)')
+                except (serial.SerialException, OSError) as e:
+                    self.get_logger().error(f'Se perdio el puerto serial: {e}. Reintento en {self.reintento:.0f} s')
+                    try:
+                        ser.close()
+                    except Exception:
+                        pass
+                    ser = None
+                    proximo_intento = time.monotonic() + self.reintento
+                    ultimo_aviso_desc = 0.0
+                    continue
+
+                # ---- telemetria vieja: avisar que no hay datos (maximo 1 por segundo)
+                ahora = time.monotonic()
+                referencia = t_tel if t_tel > 0 else t_abierto
+                if ahora - referencia > self.timeout_telemetria and ahora - ultimo_aviso_desc >= 1.0:
                     ultimo_aviso_desc = ahora
                     self._publicar(False)
-                if ahora < proximo_intento:
-                    self._parar.wait(0.1)
-                    continue
-                ser = self._abrir()
-                if ser is None:
-                    proximo_intento = time.monotonic() + self.reintento
-                    continue
-                buf.clear()
-                t_tel = 0.0
-                estado_prev = None
-                solo_usb_avisado = False
-                self._saludar(ser)
-                t_abierto = time.monotonic()
-                siguiente_envio = t_abierto
-                continue
+                    if t_tel > 0:
+                        self.get_logger().warn('El ESP32 dejo de mandar telemetria', throttle_duration_sec=5.0)
 
+                self._parar.wait(0.005)
+        except Exception as e:  # cualquier error inesperado: no morir en silencio y SIEMPRE despedirse
             try:
-                # ---- escribir el comando (cada periodo_envio)
-                ahora = time.monotonic()
-                if ahora >= siguiente_envio:
-                    siguiente_envio += self.periodo_envio
-                    if siguiente_envio < ahora:
-                        siguiente_envio = ahora + self.periodo_envio
-                    vel, dir_, cmd_viejo = self._comando_vigente(ahora, cmd_viejo)
-                    ser.write(f'V{vel},S{dir_}\n'.encode('ascii'))
-
-                # ---- leer telemetria
-                n = ser.in_waiting
-                if n:
-                    buf += ser.read(n)
-                    tel = self._procesar_lineas(buf, estado_prev)
-                    if tel is not None:
-                        pulsos, d, mv, estado = tel
-                        t_tel = time.monotonic()
-                        self._publicar(True, pulsos, d, mv, estado)
-                        estado_prev = self._avisos(estado, mv, estado_prev)
-                        if mv == 0 and not solo_usb_avisado:
-                            solo_usb_avisado = True
-                            self.get_logger().info(
-                                'El ESP32 reporta b0: solo USB, sin bateria (no es bateria critica)')
-            except (serial.SerialException, OSError) as e:
-                self.get_logger().error(f'Se perdio el puerto serial: {e}. Reintento en {self.reintento:.0f} s')
-                try:
-                    ser.close()
-                except Exception:
-                    pass
-                ser = None
-                proximo_intento = time.monotonic() + self.reintento
-                ultimo_aviso_desc = 0.0
-                continue
-
-            # ---- telemetria vieja: avisar que no hay datos (maximo 1 por segundo)
-            ahora = time.monotonic()
-            referencia = t_tel if t_tel > 0 else t_abierto
-            if ahora - referencia > self.timeout_telemetria and ahora - ultimo_aviso_desc >= 1.0:
-                ultimo_aviso_desc = ahora
-                self._publicar(False)
-                if t_tel > 0:
-                    self.get_logger().warn('El ESP32 dejo de mandar telemetria', throttle_duration_sec=5.0)
-
-            self._parar.wait(0.005)
+                self.get_logger().error(f'El hilo del puerto serial fallo: {type(e).__name__}: {e}')
+            except Exception:
+                pass
 
         # ---- cierre: parar el carro
         if ser is not None:
@@ -307,6 +320,7 @@ def main(args=None):
         pass
     finally:
         ignorar_senales_de_cierre()      # ros2 launch manda SIGINT dos veces: la 2a no debe cortar el cierre
+        perro_guardian(8.0)              # si el cierre se atorara, salir a la fuerza a los 8 s
         nodo.cerrar()
         nodo.destroy_node()
         if rclpy.ok():
