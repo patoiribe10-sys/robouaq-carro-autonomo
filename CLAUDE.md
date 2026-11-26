@@ -94,7 +94,7 @@ Objetivo: que `nvargus-daemon` no se quede sin memoria al manejar con las dos c�
 | F0 | Cerrar Epiphany/WebKit y Chromium | 3 503 → **1 973 MB** (disponible 3 835 → 5 367; **CmaFree 14–21 → 190 MB**, GPU 0–36 % → 8 %) | hecha |
 | F1 | Overrides de autostart del usuario (gnome-software, Evolution, update-notifier, DejaDup, print-applet, onboard, orca, spice, ubuntu-advantage/report, tracker) y `systemctl --user mask` de tracker, gnome-remote-desktop y los 3 servicios de Evolution | 1 973 → **1 739 MB** (−234), servicios de usuario 43 → 38 | hecha |
 | F2a | Docker y containerd (`disable --now`, sin desinstalar) | 1 739 → **1 713 MB** (−26; el RSS de 143 MB contaba páginas compartidas), servicios 50 → 48. `docker0` sigue hasta reiniciar; el ahorro de ~4.6 s de arranque se verá al reiniciar | hecha (Pato, con sudo) |
-| F2b | `packagekit` y `fwupd` (mask/disable) | pendiente (~−180 MB) | pendiente |
+| F2b | `packagekit` y `fwupd` (mask/disable) | 1 713 → **1 665 MB** (−48), servicios 48 → 46. `apt` sigue funcionando | hecha (Pato, con sudo) |
 | F2c | ModemManager, rpcbind, kerneloops, lpd y snap `cups` | pendiente (~−30 MB, ~2.7 s de arranque) | pendiente |
 | F2d | geoclue, colord, switcheroo-control, power-profiles-daemon | pendiente (~−45 MB) | pendiente |
 | F2e | timers de apt, motd-news y update-notifier | pendiente | pendiente |

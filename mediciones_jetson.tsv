@@ -3,3 +3,4 @@ F0 despues (sin Epiphany/Chromium) = LINEA BASE	2026-11-26 13:52:09	5367	1973	30
 F1 despues (autostart de usuario apagado)	2026-11-26 13:53:52	5546	1794	3041	2468	190	0	50	38	6	4089	47.0	47.2	24
 F1 despues (con evolution-alarm cerrado)	2026-11-26 13:54:37	5601	1739	3047	2517	190	0	50	38	5	4094	46.9	47.1	27
 F2a despues (Docker y containerd apagados)	2026-11-26 13:57:57	5625	1713	3079	2507	190	0	48	38	8	4154	47.1	47.3	5
+F2b despues (packagekit y fwupd apagados)	2026-11-26 13:59:33	5674	1665	3081	2553	190	0	46	38	7	4123	46.9	47.1	8
