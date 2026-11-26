@@ -64,6 +64,8 @@ class SerialBridgeNode(Node):
         self.declare_parameter('periodo_envio', 0.05)       # s entre comandos
         self.declare_parameter('timeout_cmd', 0.3)          # s sin /carro/cmd -> V0,S0
         self.declare_parameter('timeout_telemetria', 0.5)   # s sin telemetria -> conectado=false
+        # s sin telemetria -> cerrar y reabrir el puerto (el CH340 a veces abre "mudo": 26-nov). 0 = nunca
+        self.declare_parameter('reabrir_sin_telemetria_s', 2.0)
         self.declare_parameter('reintento', 2.0)            # s entre intentos de abrir el puerto
 
         self.puerto = self.get_parameter('puerto').value
@@ -72,6 +74,7 @@ class SerialBridgeNode(Node):
         self.periodo_envio = float(self.get_parameter('periodo_envio').value)
         self.timeout_cmd = float(self.get_parameter('timeout_cmd').value)
         self.timeout_telemetria = float(self.get_parameter('timeout_telemetria').value)
+        self.reabrir_sin_tel = float(self.get_parameter('reabrir_sin_telemetria_s').value)
         self.reintento = float(self.get_parameter('reintento').value)
 
         self._lock = threading.Lock()
@@ -277,6 +280,20 @@ class SerialBridgeNode(Node):
                     self._publicar(False)
                     if t_tel > 0:
                         self.get_logger().warn('El ESP32 dejo de mandar telemetria', throttle_duration_sec=5.0)
+
+                # ---- puerto "mudo": abierto pero sin una sola linea de telemetria -> cerrar y reabrir
+                if self.reabrir_sin_tel > 0 and ahora - referencia > self.reabrir_sin_tel:
+                    self.get_logger().warn(
+                        f'Puerto abierto pero sin telemetria desde hace {ahora - referencia:.1f} s: lo cierro y lo reabro')
+                    try:
+                        ser.write(b'V0,S0\n')
+                        ser.close()
+                    except Exception:
+                        pass
+                    ser = None
+                    proximo_intento = time.monotonic() + 1.0   # pausa corta: el CH340 se asienta
+                    ultimo_aviso_desc = 0.0
+                    continue
 
                 self._parar.wait(0.005)
         except Exception as e:  # cualquier error inesperado: no morir en silencio y SIEMPRE despedirse

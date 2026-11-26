@@ -37,6 +37,7 @@ class ESP32Falso:
         self.pings = 0
         self.mv, self.estado, self.pulsos = 11800, 0, 120
         self.dir = 0
+        self.mudo = False           # True: no contesta ni manda telemetria (puerto "mudo" del CH340)
         self._parar = False
         self._hilos = []
 
@@ -65,6 +66,8 @@ class ESP32Falso:
             while b'\n' in buf:
                 linea, buf = buf.split(b'\n', 1)
                 s = linea.decode(errors='ignore').strip().replace('\r', '')
+                if self.mudo:
+                    continue
                 if s == 'P':
                     self.pings += 1
                     try:
@@ -80,6 +83,8 @@ class ESP32Falso:
     def _telemetria(self):
         while not self._parar:
             time.sleep(0.05)
+            if self.mudo:
+                continue
             try:
                 os.write(self.master, f'v{self.pulsos},s{self.dir},b{self.mv},e{self.estado}\n'.encode())
             except OSError:
