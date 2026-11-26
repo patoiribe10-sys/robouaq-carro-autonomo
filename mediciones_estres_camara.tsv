@@ -1,3 +1,43 @@
 etiqueta	ciclo	ok	rc	tiempo_s	MemFree_min_MB	CmaFree_min_MB	MemAvail_min_MB	daemon_reiniciado	errores_daemon	motivo
 control sin estres (validacion de la herramienta)	1	1	0	2.0	2244	190	5399	0	0	
 control sin estres (validacion de la herramienta)	2	1	0	1.4	2230	190	5384	0	0	
+F3 antes (sin cambio de sysctl)	1	1	0	1.5	78	3	3226	0	0	
+F3 antes (sin cambio de sysctl)	2	1	0	1.5	75	0	3212	0	0	
+F3 antes (sin cambio de sysctl)	3	1	0	1.5	82	0	3215	0	0	
+F3 antes (sin cambio de sysctl)	4	1	0	1.5	76	0	3204	0	0	
+F3 antes (sin cambio de sysctl)	5	1	0	1.5	78	0	3189	0	0	
+F3 antes (sin cambio de sysctl)	6	1	0	1.5	87	1	3191	0	0	
+F3 antes (sin cambio de sysctl)	7	1	0	1.5	90	0	3191	0	0	
+F3 antes (sin cambio de sysctl)	8	1	0	1.5	78	0	3167	0	0	
+F3 antes (sin cambio de sysctl)	9	1	0	1.5	89	0	3176	0	0	
+F3 antes (sin cambio de sysctl)	10	1	0	1.5	86	0	3133	0	0	
+F3 antes (sin cambio de sysctl)	11	1	0	1.5	96	0	3153	0	0	
+F3 antes (sin cambio de sysctl)	12	1	0	1.5	88	0	3140	0	0	
+F3 antes (sin cambio de sysctl)	13	1	0	1.4	91	0	3028	0	0	
+F3 antes (sin cambio de sysctl)	14	1	0	1.5	96	0	3046	0	0	
+F3 antes (sin cambio de sysctl)	15	1	0	1.5	97	0	3044	0	0	
+F3 antes (sin cambio de sysctl)	16	1	0	1.4	89	0	2984	0	0	
+F3 antes (sin cambio de sysctl)	17	1	0	1.5	107	0	2991	0	0	
+F3 antes (sin cambio de sysctl)	18	1	0	1.5	90	0	2958	0	0	
+F3 antes (sin cambio de sysctl)	19	1	0	1.5	93	0	2961	0	0	
+F3 antes (sin cambio de sysctl)	20	1	0	1.5	93	0	2927	0	0	
+F3 antes (sin cambio de sysctl)	21	1	0	1.5	129	0	2961	0	0	
+F3 antes (sin cambio de sysctl)	22	1	0	1.5	101	0	2832	0	0	
+F3 antes (sin cambio de sysctl)	23	1	0	1.5	104	0	2870	0	0	
+F3 antes (sin cambio de sysctl)	24	1	0	1.5	103	0	2727	0	0	
+F3 antes (sin cambio de sysctl)	25	1	0	1.5	102	0	2768	0	0	
+F3 antes (sin cambio de sysctl)	26	1	0	1.5	99	0	2762	0	0	
+F3 antes (sin cambio de sysctl)	27	1	0	1.5	105	0	2756	0	0	
+F3 antes (sin cambio de sysctl)	28	1	0	1.5	105	0	2682	0	0	
+F3 antes (sin cambio de sysctl)	29	1	0	1.5	103	1	2687	0	0	
+F3 antes (sin cambio de sysctl)	30	1	0	1.5	120	2	2691	0	0	
+F3 antes (sin cambio de sysctl)	31	1	0	1.5	113	2	2687	0	0	
+F3 antes (sin cambio de sysctl)	32	1	0	1.5	107	0	2654	0	0	
+F3 antes (sin cambio de sysctl)	33	1	0	1.5	102	0	2628	0	0	
+F3 antes (sin cambio de sysctl)	34	1	0	1.5	104	0	2590	0	0	
+F3 antes (sin cambio de sysctl)	35	1	0	1.5	106	0	2558	0	0	
+F3 antes (sin cambio de sysctl)	36	1	0	1.5	109	0	2553	0	0	
+F3 antes (sin cambio de sysctl)	37	1	0	1.5	104	0	2480	0	0	
+F3 antes (sin cambio de sysctl)	38	1	0	1.5	123	0	2502	0	0	
+F3 antes (sin cambio de sysctl)	39	1	0	1.5	122	0	2483	0	0	
+F3 antes (sin cambio de sysctl)	40	1	0	1.5	117	0	2463	0	0	
