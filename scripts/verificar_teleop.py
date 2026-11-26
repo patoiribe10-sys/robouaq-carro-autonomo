@@ -37,6 +37,7 @@ class Vigia(Node):
         super().__init__('verificar_teleop')
         self.lock = threading.Lock()
         self.cmds = []          # (t, vel, dir)
+        self.joys = []          # (t, ejes, botones): lo que llego por /joy, para explicar cada paso
         self.n_joy = 0
         self.create_subscription(ComandoCarro, '/carro/cmd', self._cmd, 10)
         self.create_subscription(Joy, '/joy', self._joy, 10)
@@ -48,6 +49,9 @@ class Vigia(Node):
     def _joy(self, m):
         with self.lock:
             self.n_joy += 1
+            self.joys.append((time.monotonic(), list(m.axes), list(m.buttons)))
+            if len(self.joys) > 4000:
+                del self.joys[:1000]
 
     def ventana(self, seg):
         """Devuelve los (vel, dir) publicados durante los proximos 'seg' segundos."""
@@ -55,6 +59,25 @@ class Vigia(Node):
         time.sleep(seg)
         with self.lock:
             return [(v, d) for t, v, d in self.cmds if t >= t0]
+
+
+NOMBRES_EJES = ['LX', 'LY', 'RX', 'RY', 'LT', 'RT']
+
+
+def resumen_joy(muestras):
+    """Que llego por /joy durante la ventana: ejes que se movieron y botones apretados."""
+    if not muestras:
+        return '/joy durante la ventana: no llego nada'
+    ejes = [m[1] for m in muestras]
+    botones = [m[2] for m in muestras]
+    partes = []
+    for i in range(len(ejes[0])):
+        lo, hi = min(e[i] for e in ejes), max(e[i] for e in ejes)
+        if hi - lo >= 0.3:
+            partes.append(f"eje {i} ({NOMBRES_EJES[i] if i < len(NOMBRES_EJES) else '?'}) {lo:+.2f}..{hi:+.2f}")
+    apretados = sorted({i for b in botones for i, v in enumerate(b) if v})
+    return ('/joy durante la ventana: ' + ('; '.join(partes) if partes else 'NINGUN eje se movio')
+            + f' | botones apretados: {apretados or "ninguno"}' + ('' if 9 in apretados else '  (LB = boton 9 NO se apreto)'))
 
 
 def lanzar(cmd, env=None):
@@ -147,8 +170,12 @@ def main():
                     return
                 time.sleep(0.3)
                 print('   ¡YA! mantenlo…', flush=True)
+                t_ini = time.monotonic()
                 w = vigia.ventana(VENTANA_S)
                 print('   suelta.')
+                with vigia.lock:
+                    muestras = [j for j in vigia.joys if j[0] >= t_ini]
+                print('   ' + resumen_joy(muestras))
                 time.sleep(0.8)
                 if not w:
                     chk('hay datos', False, 'no llegó nada de /carro/cmd')
