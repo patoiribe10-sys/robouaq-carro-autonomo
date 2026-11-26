@@ -102,8 +102,9 @@ class Camara:
 
     def __init__(self, nombre, sensor_id, ancho, alto, fps_sensor, fps_stream, calidad, log,
                  dispositivo=None, espera_disp_s=ESPERA_DISPOSITIVO_S, backoff_ini=BACKOFF_INI_S,
-                 backoff_max=BACKOFF_MAX_S, estable_s=ESTABLE_S, cmd_worker=None):
+                 backoff_max=BACKOFF_MAX_S, estable_s=ESTABLE_S, cmd_worker=None, giro=0):
         self.nombre = nombre
+        self.giro = int(giro)          # flip-method de nvvidconv (2 = 180 grados)
         self.sensor_id = sensor_id
         self.ancho, self.alto = ancho, alto
         self.fps_sensor = fps_sensor
@@ -255,7 +256,7 @@ class Camara:
         return [sys.executable, SCRIPT_CAMARA,
                 '--sensor', str(self.sensor_id), '--ancho', str(self.ancho), '--alto', str(self.alto),
                 '--fps-sensor', str(int(self.fps_sensor)), '--fps-stream', str(self.fps_stream),
-                '--calidad', str(self.calidad)]
+                '--calidad', str(self.calidad), '--giro', str(self.giro)]
 
     def _lanzar(self):
         try:
@@ -604,6 +605,8 @@ class CamarasNode(Node):
         self.declare_parameter('sensor_cam1', 1)
         self.declare_parameter('dev_video_cam0', '/dev/video0')
         self.declare_parameter('dev_video_cam1', '/dev/video1')
+        self.declare_parameter('giro_cam0', 2)   # cam0 va montada al reves: 2 = girar 180 grados
+        self.declare_parameter('giro_cam1', 0)
         self.declare_parameter('espera_dispositivo_s', ESPERA_DISPOSITIVO_S)
         self.declare_parameter('backoff_ini_s', BACKOFF_INI_S)
         self.declare_parameter('backoff_max_s', BACKOFF_MAX_S)
@@ -622,8 +625,8 @@ class CamarasNode(Node):
         extra = dict(espera_disp_s=float(g('espera_dispositivo_s')), backoff_ini=float(g('backoff_ini_s')),
                      backoff_max=float(g('backoff_max_s')))
         self.camaras = {
-            'cam0': Camara('cam0', int(g('sensor_cam0')), *comunes, dispositivo=str(g('dev_video_cam0')), **extra),
-            'cam1': Camara('cam1', int(g('sensor_cam1')), *comunes, dispositivo=str(g('dev_video_cam1')), **extra),
+            'cam0': Camara('cam0', int(g('sensor_cam0')), *comunes, dispositivo=str(g('dev_video_cam0')), giro=int(g('giro_cam0')), **extra),
+            'cam1': Camara('cam1', int(g('sensor_cam1')), *comunes, dispositivo=str(g('dev_video_cam1')), giro=int(g('giro_cam1')), **extra),
         }
 
         # Estado de cada camara al arrancar, en el log (y sin tocar nvargus)

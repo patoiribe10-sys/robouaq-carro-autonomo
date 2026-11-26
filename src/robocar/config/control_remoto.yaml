@@ -52,6 +52,8 @@ camaras_node:
     sensor_cam1: 1
     dev_video_cam0: /dev/video0   # si no existe, NO se llama a nvargus con ese sensor
     dev_video_cam1: /dev/video1
+    giro_cam0: 2                  # cam0 va montada al reves (26-nov): flip-method 2 = girar 180 grados
+    giro_cam1: 0
     espera_dispositivo_s: 10.0    # cada cuanto se revisa si aparecio el /dev/videoN
     backoff_ini_s: 2.0            # espera tras una caida: 2, 4, 8, 16 y 30 s (maximo)
     backoff_max_s: 30.0

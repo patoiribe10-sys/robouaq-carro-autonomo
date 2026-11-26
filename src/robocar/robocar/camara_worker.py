@@ -25,7 +25,7 @@ import cv2
 PIPELINE = (
     'nvarguscamerasrc sensor-id={sensor} ! '
     'video/x-raw(memory:NVMM),width={ancho},height={alto},format=NV12,framerate={fps}/1 ! '
-    'nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! '
+    'nvvidconv flip-method={giro} ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! '
     'appsink sync=false drop=true max-buffers=1'
 )
 CUADROS_CALENTAMIENTO = 20
@@ -39,6 +39,8 @@ def main():
     ap.add_argument('--fps-sensor', type=int, default=30)
     ap.add_argument('--fps-stream', type=float, default=15.0)
     ap.add_argument('--calidad', type=int, default=70)
+    ap.add_argument('--giro', type=int, default=0, choices=range(0, 8),
+                    help='flip-method de nvvidconv: 0 nada, 2 = girar 180 grados (camara montada al reves)')
     a = ap.parse_args()
 
     parar = {'si': False}
@@ -49,7 +51,7 @@ def main():
     signal.signal(signal.SIGTERM, _senal)
     signal.signal(signal.SIGINT, _senal)
 
-    pipe = PIPELINE.format(sensor=a.sensor, ancho=a.ancho, alto=a.alto, fps=a.fps_sensor)
+    pipe = PIPELINE.format(sensor=a.sensor, ancho=a.ancho, alto=a.alto, fps=a.fps_sensor, giro=a.giro)
     cap = cv2.VideoCapture(pipe, cv2.CAP_GSTREAMER)
     if not cap.isOpened():
         print(f'camara {a.sensor}: no abre', file=sys.stderr, flush=True)
