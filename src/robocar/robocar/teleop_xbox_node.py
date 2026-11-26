@@ -16,7 +16,7 @@ Seguridad:
     al soltar y volver a apretar el hombre muerto con el stick a fondo. Al frenar la
     rampa es mas rapida (rampa_freno). El firmware tambien trae su propia rampa.
   * Por el cable solo viajan porcentajes (-100..100). El paso a microsegundos del
-    servo (1190 / 1360 / 1730) lo hace el firmware, asi que nunca sale un 1100.
+    servo (1190 / 1360 / 1680) lo hace el firmware, asi que nunca sale un 1100.
   * Si un indice de eje o boton no existe en el mensaje, el eje cuenta como 0 y el
     boton como no presionado (o sea, sin hombre muerto no hay movimiento).
 

@@ -4,7 +4,7 @@
 No supone nada: compara, mientras mueves el stick, el valor CRUDO del kernel (evdev, ABS_Z) contra
 cada eje de /joy (game_controller_node con el SDL propio) y calcula la correlacion de cada uno.
 Con eso decide eje_dir y signo_dir de control_remoto.yaml para que
-        derecha = dir +100 = S+100 = servo a 1730 us   (convencion del firmware carro-v2)
+        derecha = dir +100 = S+100 = servo a 1680 us   (convencion del firmware carro-v2)
 
 Uso (en una terminal de verdad, control prendido, ningun launch abierto):
     source /opt/ros/humble/setup.bash && source ~/robocar_ws/install/setup.bash
@@ -69,7 +69,7 @@ def analizar(z, ejes, boton_lb=None):
     res['veredicto'] = 'ok'
     res['eje_dir'] = mejor['eje']
     # derecha = ABS_Z sube. Si el eje sube con ABS_Z (corr > 0), derecha = +1 y signo_dir = +1;
-    # si baja (corr < 0), derecha = -1 y signo_dir = -1. Asi derecha -> dir = +100 = S+ = 1730 us.
+    # si baja (corr < 0), derecha = -1 y signo_dir = -1. Asi derecha -> dir = +100 = S+ = 1680 us.
     res['signo_dir'] = 1.0 if mejor['corr'] > 0 else -1.0
     if boton_lb is not None:
         res['lb_apretado_pct'] = round(100.0 * float(np.mean(boton_lb)), 1)
@@ -218,7 +218,7 @@ def main():
     else:
         print(f"\nCONCLUSIÓN MEDIDA: el stick derecho horizontal es el eje {r['eje_dir']} de /joy, "
               f"y al ir a la DERECHA ese eje {'SUBE' if r['signo_dir'] > 0 else 'BAJA'}.")
-        print(f"  => eje_dir: {r['eje_dir']}   signo_dir: {r['signo_dir']}   (derecha => dir +100 => S+100 => servo 1730 us)")
+        print(f"  => eje_dir: {r['eje_dir']}   signo_dir: {r['signo_dir']}   (derecha => dir +100 => S+100 => servo 1680 us)")
         if 'lb_apretado_pct' in r:
             print(f"  LB (boton 9) estuvo apretado el {r['lb_apretado_pct']} % del tiempo de la medición"
                   + ('' if r['lb_apretado_pct'] > 80 else '  <-- si es bajo, el hombre muerto se soltó y por eso dir salía 0'))

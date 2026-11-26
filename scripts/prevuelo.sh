@@ -26,6 +26,7 @@ echo; echo "=== Memoria y procesos ==="
 disp=$(awk '/^MemAvailable:/ {printf "%.0f", $2/1024}' /proc/meminfo)
 [ "$disp" -ge 3500 ] && ok "memoria disponible: ${disp} MB" || aviso "memoria disponible baja: ${disp} MB (cierra el navegador)"
 nav=$(ps -eo comm | grep -c -E "^(chrome|chromium|epiphany|WebKit)"); [ "$nav" -eq 0 ] && ok "ningun navegador abierto en la Jetson" || aviso "hay un navegador abierto en la Jetson ($nav procesos): ciérralo, ocupa memoria"
+[ "$(systemctl is-active robocar 2>/dev/null)" = active ] && falla "robocar.service esta corriendo (arranque automatico): para probar a mano o subir firmware, paralo con: sudo systemctl stop robocar"
 v=$(pgrep -fc "^(/usr/bin/python3 [^ ]*/(serial_bridge_node|teleop_xbox_node|camaras_node|camara_worker)|/opt/ros/humble/lib/joy/game_controller_node)" || true); [ "${v:-0}" -eq 0 ] && ok "no hay nodos del carro corriendo" || falla "ya hay $v proceso(s) de nodos del carro vivos: ciérralos antes de lanzar"
 ss -ltn | grep -q ":8080 " && falla "el puerto 8080 ya esta ocupado" || ok "puerto 8080 libre"
 

@@ -146,7 +146,7 @@ def main():
         joy.ejes[1] = 1.0                                   # stick izquierdo arriba
         check('LB + stick arriba -> V30,S0', cmd_en('V30,S0', 2.0), f'(ultimo {ultimo()})')
         joy.ejes[2] = -1.0                                  # stick derecho a la DERECHA (en /joy es -1)
-        check('stick derecho a la DERECHA -> S+100 (servo a 1730 us)', cmd_en('V30,S100', 2.0), f'(ultimo {ultimo()})')
+        check('stick derecho a la DERECHA -> S+100 (servo a 1680 us)', cmd_en('V30,S100', 2.0), f'(ultimo {ultimo()})')
         if con_cam:
             check('la web ve esa direccion de vuelta (telemetria s100)', esperar(lambda: estado()['dir'] == 100, 2.0), f"(dir {estado()['dir']})")
         joy.ejes[2] = 1.0                                   # IZQUIERDA

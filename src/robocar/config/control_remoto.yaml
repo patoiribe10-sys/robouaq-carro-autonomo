@@ -17,7 +17,7 @@ teleop_xbox_node:
     eje_vel: 1                 # LY, stick izquierdo vertical: arriba = +1
     eje_dir: 2                 # RX, stick derecho horizontal: izquierda = +1, derecha = -1, centro = 0
     signo_vel: 1.0             # si arriba da reversa, poner -1.0
-    signo_dir: -1.0            # derecha (-1) x -1 = +100 = S+ = servo a 1730 us (derecha). Si gira al reves, poner 1.0
+    signo_dir: -1.0            # derecha (-1) x -1 = +100 = S+ = servo a 1680 us (derecha; era 1730 hasta el 26-nov). Si gira al reves, poner 1.0
     boton_hombre_muerto: 9     # LB (mantenido)
     boton_turbo: 10            # RB
     zona_muerta: 0.08
@@ -46,7 +46,7 @@ camaras_node:
     ancho: 640
     alto: 360                   # 640x360 (16:9) desde el 26-nov: menos peso por WiFi; antes 640x480
     fps_sensor: 30
-    fps_stream: 15.0           # si la Jetson se ahoga con las dos camaras, bajar a 10.0
+    fps_stream: 10.0           # 10 fps desde el 26-nov (a peticion de Pato; menos WiFi, el video atrasaba el control Bluetooth); antes 15.0
     calidad_jpeg: 70
     sensor_cam0: 0
     sensor_cam1: 1
