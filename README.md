@@ -30,3 +30,22 @@ source install/setup.bash
 ```
 
 Ojo con OpenCV: se usa el del sistema (trae GStreamer para las cámaras CSI). No instalar `opencv-python` con pip.
+
+## Manejar con el control de Xbox y ver las cámaras
+
+Con el control conectado por Bluetooth y el ESP32 por USB (`/dev/esp32`):
+
+```bash
+source /opt/ros/humble/setup.bash && source ~/robocar_ws/install/setup.bash
+ros2 launch robocar control_remoto_launch.py
+```
+
+Abre `http://<ip de la Jetson>:8080` en el navegador de la laptop: se ven las dos cámaras, el estado del carro y el voltaje de la batería. Las cámaras solo se encienden mientras la página está abierta.
+
+- **LB mantenido** = hombre muerto (sin LB el carro se detiene). Stick izquierdo ↑↓ = velocidad, stick derecho ←→ = dirección, **RB** = turbo.
+- Los índices de los ejes y botones, y los límites de velocidad, están en `src/robocar/config/control_remoto.yaml`. Para confirmar los índices: `python3 scripts/ver_joy.py`.
+- Si el carro no se mueve en la dirección esperada, cambia `signo_vel` o `signo_dir` en ese archivo.
+
+Pruebas sin hardware (un ESP32 falso y un control falso): `scripts/prueba_puente_simulado.py` y `scripts/prueba_teleop_simulado.py`.
+
+Si `colcon build` falla al generar los mensajes con un error de `empy`, compila con `PYTHONNOUSERSITE=1 colcon build --symlink-install`.

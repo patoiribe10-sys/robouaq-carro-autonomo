@@ -28,6 +28,7 @@ setup(
         'console_scripts': [
             'teleop_xbox_node = robocar.teleop_xbox_node:main',
             'serial_bridge_node = robocar.serial_bridge_node:main',
+            'camaras_node = robocar.camaras_node:main',
             'lane_node = robocar.lane_node:main',
             'detect_node = robocar.detect_node:main',
             'nav_node = robocar.nav_node:main',
