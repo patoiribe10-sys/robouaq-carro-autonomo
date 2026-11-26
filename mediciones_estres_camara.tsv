@@ -1,0 +1,3 @@
+etiqueta	ciclo	ok	rc	tiempo_s	MemFree_min_MB	CmaFree_min_MB	MemAvail_min_MB	daemon_reiniciado	errores_daemon	motivo
+control sin estres (validacion de la herramienta)	1	1	0	2.0	2244	190	5399	0	0	
+control sin estres (validacion de la herramienta)	2	1	0	1.4	2230	190	5384	0	0	
