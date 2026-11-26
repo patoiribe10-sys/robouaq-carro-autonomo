@@ -252,6 +252,7 @@ def iniciar_ros(est, parar, env_extra):
     """Arranca game_controller_node (con el SDL_GAMECONTROLLERCONFIG pedido) y se suscribe a /joy."""
     try:
         import rclpy
+        from rclpy.executors import SingleThreadedExecutor
         from rclpy.node import Node
         from sensor_msgs.msg import Joy
     except ImportError:
@@ -260,21 +261,23 @@ def iniciar_ros(est, parar, env_extra):
     rclpy.init()
     nodo = Node('calibrar_control')
     nodo.create_subscription(Joy, '/joy', lambda m: est.on_joy(m.axes, m.buttons), 10)
-    hilo = threading.Thread(target=lambda: rclpy.spin(nodo), daemon=True)
+    ejecutor = SingleThreadedExecutor()
+    ejecutor.add_node(nodo)
+    hilo = threading.Thread(target=ejecutor.spin, name='ejecutor')
     hilo.start()
     time.sleep(1.0)
     if nodo.count_publishers('/joy') > 0:
         print('  !! Ya hay otro nodo publicando /joy (¿un game_controller_node abierto?). Cierralo y vuelve a correr esto.')
-        rclpy.shutdown()
+        ejecutor.shutdown(); hilo.join(timeout=5.0); nodo.destroy_node(); rclpy.shutdown()
         return 'ocupado'
     env = {**os.environ, **env_extra}
-    proc = subprocess.Popen(['ros2', 'run', 'joy', 'game_controller_node'], env=env, start_new_session=True,
+    proc = subprocess.Popen(['/opt/ros/humble/lib/joy/game_controller_node'], env=env, start_new_session=True,
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for _ in range(40):
         time.sleep(0.25)
         if est.joy_ejes is not None:
             break
-    return {'proc': proc, 'rclpy': rclpy, 'nodo': nodo}
+    return {'proc': proc, 'rclpy': rclpy, 'nodo': nodo, 'ejecutor': ejecutor, 'hilo': hilo}
 
 
 def cerrar_ros(ros):
@@ -288,8 +291,13 @@ def cerrar_ros(ros):
             os.killpg(ros['proc'].pid, signal.SIGKILL)
         except Exception:
             pass
+    # orden: subprocesos (arriba) -> executor -> hilo -> nodo -> rclpy.shutdown()
     try:
-        ros['rclpy'].shutdown()
+        ros['ejecutor'].shutdown()
+        ros['hilo'].join(timeout=5.0)
+        ros['nodo'].destroy_node()
+        if ros['rclpy'].ok():
+            ros['rclpy'].shutdown()
     except Exception:
         pass
 
@@ -426,7 +434,7 @@ def conclusiones(est, dev, medidas, con_joy):
         elif r['evdev_teclas']:
             dpad[campo] = r['evdev_teclas'][0]
 
-    nombre = 'Xbox Wireless Controller (BLE, medido)'
+    nombre = 'Xbox Wireless Controller (BLE medido)'
     guid = guid_sdl(dev.info)
     propuesta = armar_mapeo(guid, nombre, ejes, teclas, dpad, ind_ejes, ind_botones, invertir)
 
@@ -481,7 +489,7 @@ def modo_hipotesis(dev, est):
     print('Botones que declara el kernel → como los numera SDL (b0, b1…):')
     print('   ' + ', '.join(f'b{i}={nombre_key(c)}' for c, i in sorted(ind_botones.items(), key=lambda kv: kv[1])))
     dpad = {'dpup': 'h0.1', 'dpright': 'h0.2', 'dpdown': 'h0.4', 'dpleft': 'h0.8'}
-    hip = armar_mapeo(guid_sdl(dev.info), 'Xbox Wireless Controller (BLE, hipotesis)', EJES_HIP, TECLAS_HIP, dpad,
+    hip = armar_mapeo(guid_sdl(dev.info), 'Xbox Wireless Controller (BLE hipotesis)', EJES_HIP, TECLAS_HIP, dpad,
                       ind_ejes, ind_botones)
     actual = mapeo_actual_sdl()
     print('\nMapeo que usa SDL HOY (el de fábrica):\n   ', actual)
@@ -608,4 +616,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    codigo = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(int(codigo or 0))

@@ -1,0 +1,195 @@
+dispositivo: {nombre: Xbox Wireless Controller, bus: 5, vendor: 1118, product: 2835,
+  version: 1299}
+con_sdl_propio: false
+conclusiones:
+  guid: 050000005e040000130b000013050000
+  indices_sdl_ejes: {ABS_X: 0, ABS_Y: 1, ABS_Z: 2, ABS_RZ: 3, ABS_GAS: 4, ABS_BRAKE: 5}
+  indices_sdl_botones: {BTN_A: 0, BTN_B: 1, BTN_C: 2, BTN_NORTH: 3, BTN_WEST: 4, BTN_Z: 5,
+    BTN_TL: 6, BTN_TR: 7, BTN_TL2: 8, BTN_TR2: 9, BTN_SELECT: 10, BTN_START: 11, BTN_MODE: 12,
+    BTN_THUMBL: 13, BTN_THUMBR: 14, KEY_RECORD: 15}
+  propuesta_sdl: 050000005e040000130b000013050000,Xbox Wireless Controller (BLE, medido),a:b0,b:b1,x:b3,y:b4,back:b10,guide:b12,start:b11,leftstick:b13,rightstick:b14,leftshoulder:b6,rightshoulder:b7,misc1:b15,dpup:h0.1,dpright:h0.2,dpdown:h0.4,dpleft:h0.8,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a5,righttrigger:a4,platform:Linux,
+  avisos: []
+  joy_hoy:
+    izq_arr: {eje: 1, signo: 1}
+    izq_der: {eje: 0, signo: -1}
+    der_der: {eje: 4, signo: -1}
+    der_arr: {eje: 2, signo: 1}
+    lt: {eje: 5, signo: -1}
+    rt: {eje: 3, signo: -1}
+    lb: {boton: 4}
+    rb: {boton: 6}
+    a: {boton: 0}
+    b: {boton: 1}
+    x: {boton: 3}
+    y: {boton: 9}
+    ver: {boton: 8}
+  ejes_evdev: {leftx: ABS_X, lefty: ABS_Y, rightx: ABS_Z, righty: ABS_RZ, lefttrigger: ABS_BRAKE,
+    righttrigger: ABS_GAS}
+  teclas_evdev: {a: BTN_A, b: BTN_B, x: BTN_NORTH, y: BTN_WEST, back: BTN_SELECT,
+    start: BTN_START, guide: BTN_MODE, leftstick: BTN_THUMBL, rightstick: BTN_THUMBR,
+    leftshoulder: BTN_TL, rightshoulder: BTN_TR, misc1: KEY_RECORD}
+teleop_si_no_se_toca_sdl: {eje_vel: 1, signo_vel: 1.0, eje_dir: 4, signo_dir: -1.0,
+  boton_hombre_muerto: 4, boton_turbo: 6}
+mediciones:
+  reposo:
+    evdev_ejes: []
+    evdev_teclas: []
+    joy_ejes: []
+    joy_botones: []
+    reposo_evdev: {ABS_X: 33047, ABS_Y: 31782, ABS_Z: 34035, ABS_RZ: 33447, ABS_GAS: 0,
+      ABS_BRAKE: 0, ABS_HAT0X: 0, ABS_HAT0Y: 0}
+    reposo_joy: [-0.0, -0.0, -0.0, 1.0, -0.0, -0.0]
+  izq_izq:
+    evdev_ejes:
+    - {codigo: 0, nombre: ABS_X, base: 32537, extremo: 0, signo: -1, delta: 32537}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 0, base: -0.0, extremo: 1.0, signo: 1}
+    joy_botones: []
+  izq_der:
+    evdev_ejes:
+    - {codigo: 0, nombre: ABS_X, base: 33523, extremo: 65535, signo: 1, delta: 32012}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 0, base: -0.0, extremo: -1.0, signo: -1}
+    joy_botones: []
+  izq_arr:
+    evdev_ejes:
+    - {codigo: 1, nombre: ABS_Y, base: 32835, extremo: 0, signo: -1, delta: 32835}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 1, base: -0.0, extremo: 1.0, signo: 1}
+    joy_botones: []
+  izq_aba:
+    evdev_ejes:
+    - {codigo: 1, nombre: ABS_Y, base: 33434, extremo: 65535, signo: 1, delta: 32101}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 1, base: -0.0, extremo: -1.0, signo: -1}
+    joy_botones: []
+  der_izq:
+    evdev_ejes:
+    - {codigo: 2, nombre: ABS_Z, base: 33545, extremo: 0, signo: -1, delta: 33545}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 4, base: -0.49, extremo: 0.0, signo: 1}
+    joy_botones: []
+  der_der:
+    evdev_ejes:
+    - {codigo: 2, nombre: ABS_Z, base: 32631, extremo: 65535, signo: 1, delta: 32904}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 4, base: -0.47, extremo: -1.0, signo: -1}
+    joy_botones: []
+  der_arr:
+    evdev_ejes:
+    - {codigo: 5, nombre: ABS_RZ, base: 32694, extremo: 0, signo: -1, delta: 32694}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 2, base: -0.0, extremo: 1.0, signo: 1}
+    joy_botones: []
+  der_aba:
+    evdev_ejes:
+    - {codigo: 5, nombre: ABS_RZ, base: 33424, extremo: 65535, signo: 1, delta: 32111}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 2, base: -0.0, extremo: -1.0, signo: -1}
+    joy_botones: []
+  lt:
+    evdev_ejes:
+    - {codigo: 10, nombre: ABS_BRAKE, base: 0, extremo: 1023, signo: 1, delta: 1023}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 5, base: -0.0, extremo: -1.0, signo: -1}
+    joy_botones: []
+  rt:
+    evdev_ejes:
+    - {codigo: 9, nombre: ABS_GAS, base: 0, extremo: 1023, signo: 1, delta: 1023}
+    evdev_teclas: []
+    joy_ejes:
+    - {eje: 3, base: 1.0, extremo: -1.0, signo: -1}
+    joy_botones: []
+  lb:
+    evdev_ejes: []
+    evdev_teclas: [310]
+    joy_ejes: []
+    joy_botones: [4]
+  rb:
+    evdev_ejes: []
+    evdev_teclas: [311]
+    joy_ejes: []
+    joy_botones: [6]
+  a:
+    evdev_ejes: []
+    evdev_teclas: [304]
+    joy_ejes: []
+    joy_botones: [0]
+  b:
+    evdev_ejes: []
+    evdev_teclas: [305]
+    joy_ejes: []
+    joy_botones: [1]
+  x:
+    evdev_ejes: []
+    evdev_teclas: [307]
+    joy_ejes: []
+    joy_botones: [3]
+  y:
+    evdev_ejes: []
+    evdev_teclas: [308]
+    joy_ejes: []
+    joy_botones: [9]
+  ver:
+    evdev_ejes: []
+    evdev_teclas: [314]
+    joy_ejes: []
+    joy_botones: [8]
+  menu:
+    evdev_ejes: []
+    evdev_teclas: [315]
+    joy_ejes: []
+    joy_botones: []
+  xbox:
+    evdev_ejes: []
+    evdev_teclas: [316]
+    joy_ejes: []
+    joy_botones: []
+  ls:
+    evdev_ejes: []
+    evdev_teclas: [317]
+    joy_ejes: []
+    joy_botones: []
+  rs:
+    evdev_ejes: []
+    evdev_teclas: [318]
+    joy_ejes: []
+    joy_botones: []
+  share:
+    evdev_ejes: []
+    evdev_teclas: [167]
+    joy_ejes: []
+    joy_botones: []
+  dp_arr:
+    evdev_ejes:
+    - {codigo: 17, nombre: ABS_HAT0Y, base: 0, extremo: -1, signo: -1, delta: 1}
+    evdev_teclas: []
+    joy_ejes: []
+    joy_botones: [11]
+  dp_aba:
+    evdev_ejes:
+    - {codigo: 17, nombre: ABS_HAT0Y, base: 0, extremo: 1, signo: 1, delta: 1}
+    evdev_teclas: []
+    joy_ejes: []
+    joy_botones: [12]
+  dp_izq:
+    evdev_ejes:
+    - {codigo: 16, nombre: ABS_HAT0X, base: 0, extremo: -1, signo: -1, delta: 1}
+    evdev_teclas: []
+    joy_ejes: []
+    joy_botones: [13]
+  dp_der:
+    evdev_ejes:
+    - {codigo: 16, nombre: ABS_HAT0X, base: 0, extremo: 1, signo: 1, delta: 1}
+    evdev_teclas: []
+    joy_ejes: []
+    joy_botones: [14]

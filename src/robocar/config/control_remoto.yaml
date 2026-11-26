@@ -10,11 +10,14 @@ game_controller_node:
 
 teleop_xbox_node:
   ros__parameters:
-    # Indices de /joy. CONFIRMAR con: python3 ~/robocar_ws/scripts/ver_joy.py
-    eje_vel: 1                 # stick izquierdo, vertical
-    eje_dir: 2                 # stick derecho, horizontal
+    # Indices de /joy del mapeo ESTANDAR de game_controller_node. Para este control BLE (045e:0b13) solo
+    # valen con el SDL_GAMECONTROLLERCONFIG propio (config/sdl_gamecontroller.txt, que el launch pasa
+    # a game_controller_node). Calibrado el 26-nov con scripts/calibrar_control.py. Ver en vivo:
+    #   python3 ~/robocar_ws/scripts/ver_joy.py --lanzar
+    eje_vel: 1                 # LY, stick izquierdo vertical: arriba = +1
+    eje_dir: 2                 # RX, stick derecho horizontal: izquierda = +1, derecha = -1, centro = 0
     signo_vel: 1.0             # si arriba da reversa, poner -1.0
-    signo_dir: -1.0            # si a la derecha gira a la izquierda, poner 1.0
+    signo_dir: -1.0            # derecha (-1) x -1 = +100 = S+ = servo a 1730 us (derecha). Si gira al reves, poner 1.0
     boton_hombre_muerto: 9     # LB (mantenido)
     boton_turbo: 10            # RB
     zona_muerta: 0.08

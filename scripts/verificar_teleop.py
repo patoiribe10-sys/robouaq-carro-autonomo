@@ -23,6 +23,7 @@ import time
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 
@@ -89,11 +90,27 @@ def main():
 
     rclpy.init()
     vigia = Vigia()
-    threading.Thread(target=lambda: rclpy.spin(vigia), daemon=True).start()
+    ejecutor = SingleThreadedExecutor()
+    ejecutor.add_node(vigia)
+    hilo_ros = threading.Thread(target=ejecutor.spin, name='ejecutor')
+    hilo_ros.start()
+
+    def cerrar_ros():
+        """Orden de cierre: (los subprocesos ya se pararon) executor -> hilo -> nodo -> rclpy.
+        Si rclpy.shutdown() corre con el hilo todavia girando, el proceso aborta ("terminate called...")."""
+        ejecutor.shutdown()
+        hilo_ros.join(timeout=5.0)
+        try:
+            vigia.destroy_node()
+        except Exception:
+            pass
+        if rclpy.ok():
+            rclpy.shutdown()
+
     time.sleep(0.5)
     if vigia.count_publishers('/joy') > 0 or vigia.count_publishers('/carro/cmd') > 0:
         print('!! Ya hay nodos publicando /joy o /carro/cmd (¿un launch abierto?). Ciérralos y repite.')
-        rclpy.shutdown()
+        cerrar_ros()
         return 1
 
     procesos = [
@@ -182,13 +199,16 @@ def main():
     except (KeyboardInterrupt, EOFError):
         print('\n(interrumpido)')
     finally:
-        for p in procesos:
+        for p in procesos:          # 1) subprocesos (game_controller_node y teleop), cada uno con su grupo
             matar(p)
-        rclpy.shutdown()
+        cerrar_ros()                # 2) executor -> hilo -> nodo -> rclpy.shutdown()
 
     print(f"\n{sum(resultados)} de {len(resultados)} comprobaciones PASAN")
     return 0 if resultados and all(resultados) else 1
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    codigo = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(int(codigo or 0))     # sin destructores de C++ (evita 'terminate called...' al salir)
