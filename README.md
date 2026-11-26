@@ -40,7 +40,7 @@ source /opt/ros/humble/setup.bash && source ~/robocar_ws/install/setup.bash
 ros2 launch robocar control_remoto_launch.py
 ```
 
-Abre `http://<ip de la Jetson>:8080` en el navegador de la laptop: se ven las dos cámaras, el estado del carro y el voltaje de la batería. Las cámaras solo se encienden mientras la página está abierta.
+Abre `http://<ip de la Jetson>:8080` en el navegador de la laptop: se ven las dos cámaras, el estado del carro y el voltaje de la batería. Las cámaras solo se encienden mientras la página está abierta. Si una cámara falta o se cae, la otra sigue transmitiendo y la que falla aparece en negro con "CAMn SIN SEÑAL" y el motivo (no hace falta reiniciar nada).
 
 - **LB mantenido** = hombre muerto (sin LB el carro se detiene). Stick izquierdo ↑↓ = velocidad, stick derecho ←→ = dirección, **RB** = turbo.
 - Los índices de los ejes y botones, y los límites de velocidad, están en `src/robocar/config/control_remoto.yaml`. Para confirmar los índices: `python3 scripts/ver_joy.py`.

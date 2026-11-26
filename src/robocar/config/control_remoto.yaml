@@ -47,4 +47,9 @@ camaras_node:
     calidad_jpeg: 70
     sensor_cam0: 0
     sensor_cam1: 1
+    dev_video_cam0: /dev/video0   # si no existe, NO se llama a nvargus con ese sensor
+    dev_video_cam1: /dev/video1
+    espera_dispositivo_s: 10.0    # cada cuanto se revisa si aparecio el /dev/videoN
+    backoff_ini_s: 2.0            # espera tras una caida: 2, 4, 8, 16 y 30 s (maximo)
+    backoff_max_s: 30.0
     edad_max_estado: 1.5
