@@ -1,23 +1,16 @@
-# Calibración cámara normal (cam1 — sensor-id=1)
-# Generar con: python3 scripts/calibrate_fisheye.py --sensor-id 1 --no-fisheye
-# Tablero recomendado: 9x6 cuadros, cuadro 25mm
-
+# camera_normal.yaml — Calibración cam1 (IMX219 frontal, lente normal)
+# PLACEHOLDER — calibrar con: python3 scripts/calibrate_fisheye.py --sensor-id 1 --no-fisheye
+# Valores estimados para IMX219 @ 640x480; error esperado sin calibrar: ±15%
+model: standard
 image_width: 640
 image_height: 480
-
-# Matriz intrínseca K (3x3)
 camera_matrix:
   rows: 3
   cols: 3
   data: [600.0, 0.0, 320.0,
          0.0, 600.0, 240.0,
          0.0, 0.0, 1.0]
-
-# Coeficientes de distorsión estándar (k1, k2, p1, p2, k3)
 distortion_coefficients:
   rows: 1
   cols: 5
   data: [0.0, 0.0, 0.0, 0.0, 0.0]
-
-# CALIBRAR ANTES DE USAR — estos son valores placeholder
-calibrated: false

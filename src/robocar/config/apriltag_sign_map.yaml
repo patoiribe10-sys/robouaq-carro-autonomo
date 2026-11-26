@@ -1,5 +1,5 @@
-# Mapeo AprilTag 36h11 ID → nombre de señal RoboUAQ 2026
-# Asignado según reglamento oficial
+# apriltag_sign_map.yaml — Mapeo AprilTag 36h11 → señal RoboUAQ 2026
+# Ajustar IDs reales en pista de competencia (3 min calibración)
 tags:
   0: no_pasar
   1: sin_salida

@@ -1,23 +1,24 @@
-# Calibración cámara fisheye (cam0 — sensor-id=0)
-# Generar con: python3 scripts/calibrate_fisheye.py --sensor-id 0
-# Tablero recomendado: 9x6 cuadros, cuadro 25mm
-
-image_width: 640
-image_height: 480
-
-# Matriz intrínseca K (3x3)
 camera_matrix:
-  rows: 3
   cols: 3
-  data: [320.0, 0.0, 320.0,
-         0.0, 320.0, 240.0,
-         0.0, 0.0, 1.0]
-
-# Coeficientes de distorsión fisheye (k1, k2, k3, k4)
+  data:
+  - 192.42920951867967
+  - 0.0
+  - 324.37462183660165
+  - 0.0
+  - 256.4211475236998
+  - 284.87941423612705
+  - 0.0
+  - 0.0
+  - 1.0
+  rows: 3
 distortion_coefficients:
-  rows: 1
   cols: 4
-  data: [0.0, 0.0, 0.0, 0.0]
-
-# CALIBRAR ANTES DE USAR — estos son valores placeholder
-calibrated: false
+  data:
+  - 0.160688682784472
+  - 0.06157071211461479
+  - -0.11777707602168334
+  - 0.044691094584696035
+  rows: 1
+image_height: 480
+image_width: 640
+rms_error: 0.6416791232340646

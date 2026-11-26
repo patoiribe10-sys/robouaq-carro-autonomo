@@ -1,39 +1,42 @@
-# Parámetros de transformación bird's eye view (perspectiva desde arriba)
-# Cámara fisheye montada ~15cm sobre la pista, apuntando hacia abajo
-# Ajustar src_points corriendo: python3 scripts/calibrate_fisheye.py --tune-birdseye
+# bird_eye_params.yaml — Parámetros bird's eye view para lane_node
+# Ajustar src_points con: python3 scripts/calibrate_fisheye.py --sensor-id 0 --tune-birdseye
+# Coordenadas en píxeles sobre imagen 640x480 DESPUÉS de undistort fisheye
 
-# Puntos en imagen original (trapecio visto desde arriba)
-# Orden: [top-left, top-right, bottom-right, bottom-left]
-# Imagen 640x480 — zona inferior donde se ven las líneas del carril
-src_points:
-  - [200, 200]   # top-left
-  - [440, 200]   # top-right
-  - [580, 420]   # bottom-right
-  - [60,  420]   # bottom-left
-
-# Puntos destino (rectángulo en imagen rectificada 400x400)
-dst_points:
-  - [50,  50]    # top-left
-  - [350, 50]    # top-right
-  - [350, 350]   # bottom-right
-  - [50,  350]   # bottom-left
-
-# Tamaño de la imagen de salida (bird's eye)
 output_width: 400
 output_height: 400
 
-# ROI: usar solo el 60% inferior de la imagen antes del warp
+# Fracción de la imagen a recortar desde arriba antes del warp (0.0=nada, 1.0=todo)
 roi_top_fraction: 0.4
 
-# Parámetros de umbral HSV para detectar cinta oscura sobre vinilo claro
-# Ajustar según condiciones de iluminación del track
+# Máscara HSV para líneas OSCURAS (cinta eléctrica negra sobre PVC claro)
+# H: cualquier tono, S: cualquier saturación, V: 0-80 (oscuro)
 hsv_dark_lower: [0, 0, 0]
 hsv_dark_upper: [180, 255, 80]
 
-# Filtros morfológicos
-morph_kernel_size: 5
+# Área mínima de contorno para considerarlo línea válida (px²)
 min_contour_area: 500
 
-# Crosswalk: mínimo de líneas horizontales para considerar cruce peatonal
+# Tamaño kernel morfología (cierre + apertura para limpiar ruido)
+morph_kernel_size: 5
+
+# Crosswalk: mínimo de franjas horizontales para detectar paso peatonal
 crosswalk_min_lines: 3
-crosswalk_line_gap_px: 15
+
+# Crosswalk: gap máximo entre franjas (px en imagen warped)
+crosswalk_line_gap_px: 20
+
+# Puntos fuente (en ROI recortado, imagen 640×288 aprox. después de roi_top=0.4)
+# Orden: [top-left, top-right, bottom-right, bottom-left]
+# AJUSTAR EN PISTA: corren desde el punto de cámara hasta 1m adelante del carro
+src_points:
+  - [200, 50]
+  - [440, 50]
+  - [580, 238]
+  - [60, 238]
+
+# Puntos destino en imagen bird's eye (output_width × output_height)
+dst_points:
+  - [50, 50]
+  - [350, 50]
+  - [350, 350]
+  - [50, 350]
