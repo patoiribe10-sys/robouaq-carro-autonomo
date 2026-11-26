@@ -108,6 +108,9 @@ class TeleopXboxNode(Node):
         self._t_joy = 0.0
         self._vel = 0.0                 # velocidad que se esta mandando (con rampa)
         self._activo_prev = False
+        self._periodo = 1.0 / frecuencia   # s entre ciclos del timer (el latido)
+        self._t_rampa = time.monotonic()   # ultimo instante en que se avanzo la rampa
+        self._ult_pub = None               # (vel, dir) del ultimo /carro/cmd publicado
         self._vivo_prev = None
 
         self.pub = self.create_publisher(ComandoCarro, '/carro/cmd', 10)
@@ -122,6 +125,9 @@ class TeleopXboxNode(Node):
     def _on_joy(self, msg):
         self._joy = msg
         self._t_joy = time.monotonic()
+        # Reaccionar al llegar el /joy, sin esperar al siguiente tick del timer (ahorra hasta 50 ms).
+        # El timer sigue publicando cada ciclo como latido.
+        self._ciclo(por_evento=True)
 
     def _boton(self, i):
         j = self._joy
@@ -134,7 +140,7 @@ class TeleopXboxNode(Node):
         return float(j.axes[i])
 
     # ----------------------------------------------------------------- ciclo
-    def _ciclo(self):
+    def _ciclo(self, por_evento=False):
         ahora = time.monotonic()
         vivo = self._joy is not None and (ahora - self._t_joy) <= self.timeout_joy
         activo = vivo and self._boton(self.b_muerto)
@@ -167,13 +173,27 @@ class TeleopXboxNode(Node):
             d = zona_muerta(self._eje(self.eje_dir) * self.signo_dir, self.zona)
             objetivo_dir = recortar(d * 100.0, -self.dir_max, self.dir_max)
 
-        self._vel = rampa(self._vel, objetivo_vel, self.rampa_acel, self.rampa_freno)
+        # La rampa se define por ciclo del timer (rampa_acel % cada 1/frecuencia s). Se escala con el tiempo
+        # transcurrido para que correrla tambien por evento NO la acelere. Nunca mas de un paso completo.
+        dt = ahora - self._t_rampa
+        if por_evento and dt < 0.005:
+            factor = 0.0                          # evento pegado a otro: no avanza la rampa
+        else:
+            factor = recortar(dt / self._periodo, 0.0, 1.0)
+            self._t_rampa = ahora
+        self._vel = rampa(self._vel, objetivo_vel, self.rampa_acel * factor, self.rampa_freno * factor)
+        if por_evento:
+            # por evento solo se publica si hay algo nuevo; si no, el timer ya manda el latido
+            nuevo = (int(recortar(round(self._vel), -100, 100)), int(recortar(round(objetivo_dir), -100, 100)))
+            if nuevo == self._ult_pub:
+                return
         self._publicar(self._vel, objetivo_dir)
 
     def _publicar(self, vel, dir_):
         m = ComandoCarro()
         m.vel = int(recortar(round(vel), -100, 100))
         m.dir = int(recortar(round(dir_), -100, 100))
+        self._ult_pub = (m.vel, m.dir)
         self.pub.publish(m)
 
     def parar(self):

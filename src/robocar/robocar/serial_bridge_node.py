@@ -82,6 +82,8 @@ class SerialBridgeNode(Node):
         self._dir = 0
         self._t_cmd = None            # time.monotonic() del ultimo /carro/cmd
         self._parar = threading.Event()
+        self._cmd_nuevo = threading.Event()   # despierta al hilo del puerto cuando llega un /carro/cmd distinto
+        self._ult_envio = None                # (vel, dir) del ultimo V...,S... escrito al puerto
 
         self.pub_estado = self.create_publisher(EstadoCarro, '/carro/estado', 10)
         self.create_subscription(ComandoCarro, '/carro/cmd', self._on_cmd, 10)
@@ -99,6 +101,8 @@ class SerialBridgeNode(Node):
             self._vel = recortar(int(msg.vel), -100, 100)
             self._dir = recortar(int(msg.dir), -100, 100)
             self._t_cmd = time.monotonic()
+            if (self._vel, self._dir) != self._ult_envio:
+                self._cmd_nuevo.set()             # comando distinto: escribirlo YA, sin esperar el latido
 
     def _publicar(self, conectado, pulsos=0, dir_=0, mv=0, estado=ESTADO_SIN_DATOS):
         m = EstadoCarro()
@@ -240,12 +244,20 @@ class SerialBridgeNode(Node):
                 try:
                     # ---- escribir el comando (cada periodo_envio)
                     ahora = time.monotonic()
-                    if ahora >= siguiente_envio:
-                        siguiente_envio += self.periodo_envio
-                        if siguiente_envio < ahora:
+                    por_evento = self._cmd_nuevo.is_set()
+                    if por_evento or ahora >= siguiente_envio:
+                        if por_evento:
+                            # llego un comando distinto: se escribe YA; el latido se cuenta desde este envio
+                            self._cmd_nuevo.clear()
                             siguiente_envio = ahora + self.periodo_envio
+                        else:
+                            siguiente_envio += self.periodo_envio
+                            if siguiente_envio < ahora:
+                                siguiente_envio = ahora + self.periodo_envio
                         vel, dir_, cmd_viejo = self._comando_vigente(ahora, cmd_viejo)
                         ser.write(f'V{vel},S{dir_}\n'.encode('ascii'))
+                        with self._lock:
+                            self._ult_envio = (vel, dir_)
 
                     # ---- leer telemetria
                     n = ser.in_waiting
@@ -295,7 +307,7 @@ class SerialBridgeNode(Node):
                     ultimo_aviso_desc = 0.0
                     continue
 
-                self._parar.wait(0.005)
+                self._cmd_nuevo.wait(0.005)   # se despierta antes si llega un comando nuevo
         except Exception as e:  # cualquier error inesperado: no morir en silencio y SIEMPRE despedirse
             try:
                 self.get_logger().error(f'El hilo del puerto serial fallo: {type(e).__name__}: {e}')
