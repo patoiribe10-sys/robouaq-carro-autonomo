@@ -1,0 +1,45 @@
+n: 422
+rango_z:
+- 0.0
+- 65535.0
+ejes:
+- eje: 0
+  nombre: LX
+  min: -0.01
+  max: -0.01
+  rango: 0.0
+  corr: 0.0
+- eje: 1
+  nombre: LY
+  min: -0.01
+  max: -0.01
+  rango: 0.0
+  corr: 0.0
+- eje: 2
+  nombre: RX
+  min: -1.0
+  max: 1.0
+  rango: 2.0
+  corr: -1.0
+- eje: 3
+  nombre: RY
+  min: -0.28
+  max: 0.19
+  rango: 0.47
+  corr: 0.871
+- eje: 4
+  nombre: LT
+  min: -0.0
+  max: -0.0
+  rango: 0.0
+  corr: 0.0
+- eje: 5
+  nombre: RT
+  min: -0.0
+  max: -0.0
+  rango: 0.0
+  corr: 0.0
+veredicto: ok
+eje_dir: 2
+signo_dir: -1.0
+lb_apretado_pct: 96.0

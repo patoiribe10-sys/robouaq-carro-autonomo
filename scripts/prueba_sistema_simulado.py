@@ -26,6 +26,10 @@ import threading
 import time
 import urllib.request
 
+# Las pruebas SIMULADAS corren en OTRO dominio ROS (77), aislado del real (0): asi sus /joy y /carro/cmd falsos
+# no se mezclan con el control real ni con otra prueba corriendo al mismo tiempo (ROS_LOCALHOST_ONLY es 0).
+os.environ['ROS_DOMAIN_ID'] = os.environ.get('ROS_DOMAIN_ID_PRUEBAS', '77')
+
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node

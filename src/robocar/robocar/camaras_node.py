@@ -129,6 +129,7 @@ class Camara:
         self._ultimo_espectador = 0.0
         self._t_chequeo = 0.0
         self.lanzamientos = 0                    # cuantas veces se lanzo el proceso hijo
+        self._proc_vivo = None                   # el proceso hijo actual (para rematarlo al cerrar si hiciera falta)
         self._parar = False
         self._hilo = threading.Thread(target=self._bucle, name=f'cam-{nombre}', daemon=True)
 
@@ -141,6 +142,15 @@ class Camara:
             self._parar = True
             self.cond.notify_all()
         self._hilo.join(timeout=8.0)
+        # Garantia para salir sin dejar huerfanos: si el hilo se atoro y el hijo sigue vivo, se remata aqui.
+        p = self._proc_vivo
+        if p is not None and p.poll() is None:
+            self.log.warn(f'{self.nombre}: el proceso de captura no cerro a tiempo; se mata')
+            try:
+                p.kill()
+                p.wait(timeout=3.0)
+            except Exception:
+                pass
 
     @property
     def parando(self):
@@ -241,8 +251,9 @@ class Camara:
     def _lanzar(self):
         try:
             self.lanzamientos += 1
-            return subprocess.Popen(self._comando(), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                    bufsize=0)
+            self._proc_vivo = subprocess.Popen(self._comando(), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                               bufsize=0)
+            return self._proc_vivo
         except OSError as e:
             self.log.warn(f'{self.nombre}: no pude lanzar el proceso de la cámara: {e}',
                           throttle_duration_sec=30.0)
